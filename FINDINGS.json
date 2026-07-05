@@ -1,0 +1,23 @@
+[
+  {
+    "severity": "high",
+    "category": "reentrancy",
+    "function_or_line": "withdraw (lines 15-23)",
+    "description": "The withdraw function in Reentrancy.sol performs an external call (msg.sender.call) to transfer Ether before updating the user's balance mapping, allowing for reentrancy attacks.",
+    "source_tool": "manual_audit"
+  },
+  {
+    "severity": "high",
+    "category": "arbitrary_delegatecall",
+    "function_or_line": "fallback (lines 25-30)",
+    "description": "The fallback function in Delegation.sol uses delegatecall to forward msg.data directly to Delegate, allowing callers to execute arbitrary functions on the delegate (such as pwn()) under the storage context of Delegation, leading to ownership hijacking.",
+    "source_tool": "manual_audit"
+  },
+  {
+    "severity": "medium",
+    "category": "tx_origin_use",
+    "function_or_line": "changeOwner (lines 11-15)",
+    "description": "The changeOwner function in Telephone.sol uses tx.origin for authorization, which is vulnerable to phishing/redirection attacks where an owner is tricked into calling a malicious contract.",
+    "source_tool": "manual_audit"
+  }
+]

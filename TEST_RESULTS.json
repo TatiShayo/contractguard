@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "summary": "7 of 7 validation pipeline targets passed",
+  "details": [
+    {
+      "status": "passed",
+      "message": "Vulnerability 'Reentrancy / State access after external call' was correctly flagged. Findings count: 8",
+      "retries": 0,
+      "test_name": "Reentrancy.sol"
+    },
+    {
+      "status": "passed",
+      "message": "Vulnerability 'tx.origin authorization bypass / Use of tx.origin' was correctly flagged. Findings count: 4",
+      "retries": 0,
+      "test_name": "Telephone.sol"
+    },
+    {
+      "status": "passed",
+      "message": "Vulnerability 'Arbitrary delegatecall / Delegatecall to user-supplied address' was correctly flagged. Findings count: 7",
+      "retries": 0,
+      "test_name": "Delegation.sol"
+    },
+    {
+      "status": "passed",
+      "message": "Vulnerability 'Lack of access control in flash loan' was correctly flagged. Findings count: 3",
+      "retries": 0,
+      "test_name": "NaiveReceiverLenderPool.sol"
+    },
+    {
+      "status": "passed",
+      "message": "Vulnerability 'Arbitrary external call execution' was correctly flagged. Findings count: 3",
+      "retries": 0,
+      "test_name": "TrusterLenderPool.sol"
+    },
+    {
+      "status": "passed",
+      "message": "Vulnerability 'Deposit-based flash loan reentrancy' was correctly flagged. Findings count: 1",
+      "retries": 0,
+      "test_name": "SideEntranceLenderPool.sol"
+    },
+    {
+      "status": "passed",
+      "message": "Control contract check passed (no false positives with high/medium severity). Findings count: 3",
+      "retries": 0,
+      "test_name": "Clean.sol"
+    }
+  ]
+}
