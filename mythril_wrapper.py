@@ -1,4 +1,5 @@
 import subprocess
+import shutil
 import json
 import os
 import re
@@ -34,46 +35,53 @@ def run_mythril(contract_path: str) -> List[Finding]:
 
     findings = []
     
-    # 1. Try to invoke `myth analyze`
+    # 1. Try to invoke `myth analyze` with absolute path
     try:
-        cmd = ["myth", "analyze", contract_path, "-o", "json"]
-        result = subprocess.run(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            timeout=15
-        )
-        if result.returncode != 0:
-            stderr_lower = result.stderr.lower()
-            stdout_lower = result.stdout.lower()
-            if "compile" in stderr_lower or "compilation" in stderr_lower or "compile" in stdout_lower or "compilation" in stdout_lower:
-                logger.error("Solidity compilation failed during Mythril execution:\n%s\n%s", result.stderr, result.stdout)
-            elif result.stderr.strip():
-                logger.error("Mythril execution error (exit code %d): %s", result.returncode, result.stderr.strip())
+        myth_bin = shutil.which("myth")
+        if not myth_bin:
+            logger.warning("myth not found in PATH — using fallback heuristic analysis")
+        else:
+            bin_dir = os.path.dirname(myth_bin)
+            if bin_dir and os.name == 'posix' and (os.stat(bin_dir).st_mode & 0o002):
+                raise RuntimeError(f"myth binary at {myth_bin} is in a world-writable directory — refusing to execute")
+            cmd = [myth_bin, "analyze", contract_path, "-o", "json"]
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                timeout=15
+            )
+            if result.returncode != 0:
+                stderr_lower = result.stderr.lower()
+                stdout_lower = result.stdout.lower()
+                if "compile" in stderr_lower or "compilation" in stderr_lower or "compile" in stdout_lower or "compilation" in stdout_lower:
+                    logger.error("Solidity compilation failed during Mythril execution:\n%s\n%s", result.stderr, result.stdout)
+                elif result.stderr.strip():
+                    logger.error("Mythril execution error (exit code %d): %s", result.returncode, result.stderr.strip())
 
-        if result.returncode == 0 or result.stdout.strip():
-            # Locate the start of JSON in stdout
-            stdout = result.stdout
-            start_idx = stdout.find("{")
-            if start_idx != -1:
-                data = json.loads(stdout[start_idx:])
-                issues = data.get("issues", [])
-                for issue in issues:
-                    severity = (issue.get("severity") or "unknown").lower()
-                    category = issue.get("title") or "unknown"
-                    description = issue.get("description", "").strip()
-                    func_name = issue.get("function") or "unknown"
-                    
-                    findings.append(Finding(
-                        severity=severity,
-                        category=category,
-                        function_or_line=func_name,
-                        description=description,
-                        source_tool="mythril"
-                    ))
-                if findings:
-                    return findings
+            if result.returncode == 0 or result.stdout.strip():
+                # Locate the start of JSON in stdout
+                stdout = result.stdout
+                start_idx = stdout.find("{")
+                if start_idx != -1:
+                    data = json.loads(stdout[start_idx:])
+                    issues = data.get("issues", [])
+                    for issue in issues:
+                        severity = (issue.get("severity") or "unknown").lower()
+                        category = issue.get("title") or "unknown"
+                        description = issue.get("description", "").strip()
+                        func_name = issue.get("function") or "unknown"
+                        
+                        findings.append(Finding(
+                            severity=severity,
+                            category=category,
+                            function_or_line=func_name,
+                            description=description,
+                            source_tool="mythril"
+                        ))
+                    if findings:
+                        return findings
     except (FileNotFoundError, PermissionError):
         # Silently fall back if the myth binary is not found or not executable
         pass

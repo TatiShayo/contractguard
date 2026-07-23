@@ -1,4 +1,5 @@
 import subprocess
+import shutil
 import json
 import os
 from typing import List, Dict, Any
@@ -36,8 +37,14 @@ def run_slither(contract_path: str) -> List[Finding]:
     except (FileNotFoundError, PermissionError) as e:
         raise FileNotFoundError(f"Contract file not found or inaccessible at: {contract_path}") from e
 
-    # Invoke slither
-    cmd = ["slither", contract_path, "--json", "-"]
+    # Invoke slither with absolute path
+    slither_bin = shutil.which("slither")
+    if not slither_bin:
+        raise RuntimeError("slither not found in PATH. Install with: pip install slither-analyzer")
+    bin_dir = os.path.dirname(slither_bin)
+    if bin_dir and os.name == 'posix' and (os.stat(bin_dir).st_mode & 0o002):
+        raise RuntimeError(f"slither binary at {slither_bin} is in a world-writable directory — refusing to execute")
+    cmd = [slither_bin, contract_path, "--json", "-"]
     
     result = subprocess.run(
         cmd,

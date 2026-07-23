@@ -1,48 +1,60 @@
 {
   "passed": true,
-  "summary": "7 of 7 validation pipeline targets passed",
+  "summary": "9 of 9 tests passed",
   "details": [
     {
       "status": "passed",
-      "message": "Vulnerability 'Reentrancy / State access after external call' was correctly flagged. Findings count: 8",
+      "message": "Success",
       "retries": 0,
-      "test_name": "Reentrancy.sol"
+      "test_name": "test_reentrancy"
     },
     {
       "status": "passed",
-      "message": "Vulnerability 'tx.origin authorization bypass / Use of tx.origin' was correctly flagged. Findings count: 4",
+      "message": "Success",
       "retries": 0,
-      "test_name": "Telephone.sol"
+      "test_name": "test_telephone"
     },
     {
       "status": "passed",
-      "message": "Vulnerability 'Arbitrary delegatecall / Delegatecall to user-supplied address' was correctly flagged. Findings count: 7",
+      "message": "Success",
       "retries": 0,
-      "test_name": "Delegation.sol"
+      "test_name": "test_delegation"
     },
     {
       "status": "passed",
-      "message": "Vulnerability 'Lack of access control in flash loan' was correctly flagged. Findings count: 3",
+      "message": "Success",
       "retries": 0,
-      "test_name": "NaiveReceiverLenderPool.sol"
+      "test_name": "test_clean"
     },
     {
       "status": "passed",
-      "message": "Vulnerability 'Arbitrary external call execution' was correctly flagged. Findings count: 3",
+      "message": "Success",
       "retries": 0,
-      "test_name": "TrusterLenderPool.sol"
+      "test_name": "test_mythril_reentrancy"
     },
     {
       "status": "passed",
-      "message": "Vulnerability 'Deposit-based flash loan reentrancy' was correctly flagged. Findings count: 1",
+      "message": "Success",
       "retries": 0,
-      "test_name": "SideEntranceLenderPool.sol"
+      "test_name": "test_reconciliation"
     },
     {
       "status": "passed",
-      "message": "Control contract check passed (no false positives with high/medium severity). Findings count: 3",
+      "message": "Success",
       "retries": 0,
-      "test_name": "Clean.sol"
+      "test_name": "test_llm_judge_naive_receiver"
+    },
+    {
+      "status": "passed",
+      "message": "Success",
+      "retries": 0,
+      "test_name": "test_llm_judge_truster"
+    },
+    {
+      "status": "passed",
+      "message": "Success",
+      "retries": 0,
+      "test_name": "test_llm_judge_side_entrance"
     }
   ]
 }
