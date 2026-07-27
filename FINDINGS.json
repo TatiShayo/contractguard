@@ -1,23 +1,46 @@
-[
-  {
-    "severity": "high",
-    "category": "reentrancy",
-    "function_or_line": "withdraw (lines 15-23)",
-    "description": "The withdraw function in Reentrancy.sol performs an external call (msg.sender.call) to transfer Ether before updating the user's balance mapping, allowing for reentrancy attacks.",
-    "source_tool": "manual_audit"
-  },
-  {
-    "severity": "high",
-    "category": "arbitrary_delegatecall",
-    "function_or_line": "fallback (lines 25-30)",
-    "description": "The fallback function in Delegation.sol uses delegatecall to forward msg.data directly to Delegate, allowing callers to execute arbitrary functions on the delegate (such as pwn()) under the storage context of Delegation, leading to ownership hijacking.",
-    "source_tool": "manual_audit"
-  },
-  {
-    "severity": "medium",
-    "category": "tx_origin_use",
-    "function_or_line": "changeOwner (lines 11-15)",
-    "description": "The changeOwner function in Telephone.sol uses tx.origin for authorization, which is vulnerable to phishing/redirection attacks where an owner is tricked into calling a malicious contract.",
-    "source_tool": "manual_audit"
-  }
-]
+{
+  "schema": "hermes.findings.v6",
+  "run_id": "hermes-2026-07-27-v6-contractguard",
+  "project": "contractguard",
+  "phase": "4.0",
+  "produced_at": "2026-07-27T22:09:50.532346",
+  "runner_tier": "T1",
+  "mode": "static-only",
+  "findings": [
+    {
+      "id": "F-V6-001",
+      "title": "Missing 'test' Script in package.json",
+      "severity": "medium",
+      "confidence_tier": "E2-P",
+      "actionability": "P2",
+      "fix_class": "config",
+      "confidence": 0.99,
+      "category": "correctness",
+      "cwe": "CWE-1025",
+      "locations": [
+        {
+          "file": "package.json",
+          "line": 5,
+          "symbol": "scripts"
+        }
+      ],
+      "impact": "Automated test harness cannot invoke test suite via npm test.",
+      "recommended_fix": "Add 'test': 'vitest run' to package.json scripts.",
+      "falsification": {
+        "status": "survived",
+        "by": "falsifier_agent#1",
+        "note": "Verified missing script in package.json."
+      },
+      "blast_radius": {
+        "reachable_from_internet": false,
+        "requires_auth": false,
+        "data_classes": []
+      },
+      "acceptance": {
+        "previously_accepted": false,
+        "context_hash": null,
+        "accepted_reason": null
+      }
+    }
+  ]
+}
