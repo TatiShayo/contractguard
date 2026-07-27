@@ -3,7 +3,7 @@
   "run_id": "hermes-2026-07-27-v6-contractguard",
   "project": "contractguard",
   "phase": "4.0",
-  "produced_at": "2026-07-27T22:35:52.909921",
+  "produced_at": "2026-07-27T22:36:24.642813",
   "runner_tier": "T1",
   "mode": "static-only",
   "findings": [
