@@ -1,9 +1,19 @@
+"""
+ContractGuard Validation Pipeline Runner.
+Evaluates static analysis, symbolic heuristics, and economic logic judge across benchmark fixtures.
+Hermes v6 Engineering Standard compliant.
+"""
+
 import os
 import json
+
+os.environ.setdefault("CONTRACTGUARD_OFFLINE", "1")
+
 from slither_wrapper import run_slither
 from mythril_wrapper import run_mythril, reconcile
 from economic_logic_judge import review_economic_logic
-from report_generator import generate_report
+from report_generator import generate_report, generate_sarif_report, generate_json_report, calculate_security_score
+
 
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -18,7 +28,8 @@ def main():
                 "reentrancy" in f.category.lower() or 
                 "state access after external call" in f.category.lower() or 
                 "reentrancy" in f.description.lower() or 
-                "state access after external call" in f.description.lower()
+                "state access after external call" in f.description.lower() or
+                f.rule_id == "CG-001-REENTRANCY"
                 for f in findings
             )
         },
@@ -29,8 +40,10 @@ def main():
             "check_fn": lambda findings: any(
                 "tx.origin" in f.category.lower() or 
                 "use of tx.origin" in f.category.lower() or 
+                "origin" in f.category.lower() or
                 "tx.origin" in f.description.lower() or 
-                "origin" in f.description.lower()
+                "origin" in f.description.lower() or
+                f.rule_id == "CG-002-TX-ORIGIN"
                 for f in findings
             )
         },
@@ -41,7 +54,8 @@ def main():
             "check_fn": lambda findings: any(
                 "delegatecall" in f.category.lower() or 
                 "delegate-call" in f.category.lower() or 
-                "delegatecall" in f.description.lower()
+                "delegatecall" in f.description.lower() or
+                f.rule_id == "CG-003-CONTROLLED-DELEGATECALL"
                 for f in findings
             )
         },
@@ -53,7 +67,8 @@ def main():
                 "access control" in f.category.lower() or 
                 "flash loan" in f.category.lower() or 
                 "access control" in f.description.lower() or 
-                "flash loan" in f.description.lower()
+                "flash loan" in f.description.lower() or
+                f.rule_id == "CG-008-FLASHLOAN-ACCESS-CONTROL"
                 for f in findings
             )
         },
@@ -66,7 +81,8 @@ def main():
                 "external call" in f.category.lower() or 
                 "call execution" in f.category.lower() or 
                 "arbitrary call" in f.description.lower() or 
-                "external call" in f.description.lower()
+                "external call" in f.description.lower() or
+                f.rule_id == "CG-006-ARBITRARY-CALL"
                 for f in findings
             )
         },
@@ -78,7 +94,8 @@ def main():
                 "reentrancy" in f.category.lower() or 
                 "deposit-based" in f.category.lower() or 
                 "reentrancy" in f.description.lower() or 
-                "deposit" in f.description.lower()
+                "deposit" in f.description.lower() or
+                f.rule_id == "CG-007-FLASHLOAN-DEPOSIT-REENTRANCY"
                 for f in findings
             )
         }
@@ -89,7 +106,7 @@ def main():
             "name": "Clean.sol",
             "path": os.path.join(base_dir, "fixtures", "ethernaut", "Clean.sol"),
             "intended_vulnerability": "None (Control)",
-            "check_fn": lambda findings: len([f for f in findings if f.severity in ("high", "medium")]) == 0
+            "check_fn": lambda findings: len([f for f in findings if f.severity in ("high", "critical", "medium")]) == 0
         }
     ]
 
@@ -97,7 +114,7 @@ def main():
     results_breakdown = []
     correctly_flagged_count = 0
 
-    print("Starting ContractGuard Validation Pipeline Run...")
+    print("Starting ContractGuard Validation Pipeline Run (Hermes v6)...")
     
     # Process vulnerable challenges
     for challenge in vulnerable_challenges:
@@ -237,7 +254,22 @@ def main():
         f.write(report_content)
     print(f"Saved unified report to {report_path}")
 
+    # Generate SARIF report
+    sarif_content = generate_sarif_report(all_findings)
+    sarif_path = os.path.join(base_dir, "SARIF_REPORT.sarif")
+    with open(sarif_path, "w", encoding="utf-8") as f:
+        f.write(sarif_content)
+    print(f"Saved SARIF report to {sarif_path}")
+
+    # Generate JSON report
+    json_content = generate_json_report(all_findings)
+    json_path = os.path.join(base_dir, "FINDINGS.json")
+    with open(json_path, "w", encoding="utf-8") as f:
+        f.write(json_content)
+    print(f"Saved JSON findings to {json_path}")
+
     # Generate RESULTS.md content
+    score, grade = calculate_security_score(all_findings)
     results_md = []
     results_md.append("# Validation Run Results")
     results_md.append("")
@@ -245,6 +277,8 @@ def main():
     results_md.append("")
     results_md.append("## 📈 Performance Summary")
     results_md.append(f"- **Overall Recall:** **{recall_percentage:.2f}%** ({correctly_flagged_count} / {total_vulnerable} vulnerable challenges correctly identified)")
+    results_md.append(f"- **Security Posture Score:** **{score}/100** ({grade})")
+    results_md.append(f"- **Total Findings:** **{len(all_findings)}** across benchmark fixtures")
     results_md.append("")
     results_md.append("## 📋 Challenge Breakdown")
     results_md.append("| Challenge / Contract | Type | Intended Vulnerability | Correctly Flagged? | Findings Count | Status |")
@@ -258,12 +292,15 @@ def main():
 
     results_md.append("")
     results_md.append("## 📄 Verification and Findings Report")
-    results_md.append("A detailed unified report of all identified findings has been saved to [UNIFIED_REPORT.md](UNIFIED_REPORT.md).")
+    results_md.append("- Comprehensive Markdown Report: [UNIFIED_REPORT.md](UNIFIED_REPORT.md)")
+    results_md.append("- OASIS SARIF v2.1.0 Report: [SARIF_REPORT.sarif](SARIF_REPORT.sarif)")
+    results_md.append("- Sanitized JSON Findings: [FINDINGS.json](FINDINGS.json)")
     
     results_path = os.path.join(base_dir, "RESULTS.md")
     with open(results_path, "w", encoding="utf-8") as f:
         f.write("\n".join(results_md))
     print(f"Saved results summary to {results_path}")
+
 
 if __name__ == "__main__":
     main()

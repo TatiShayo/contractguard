@@ -1,0 +1,949 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "ContractGuard",
+          "version": "2.0.0",
+          "informationUri": "https://github.com/contractguard/contractguard",
+          "rules": [
+            {
+              "id": "CG-001-REENTRANCY",
+              "name": "Reentrancy / State access after external call",
+              "shortDescription": {
+                "text": "Reentrancy Vulnerability"
+              },
+              "fullDescription": {
+                "text": "State variable modified after external call (e.g. call.value, send, transfer), allowing reentrant control flow to hijack contract state."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "cwe": "CWE-841",
+                "precision": "high"
+              }
+            },
+            {
+              "id": "CG-012-USELESS-STATEMENT",
+              "name": "Useless statement",
+              "shortDescription": {
+                "text": "Useless Statement / Dead Code"
+              },
+              "fullDescription": {
+                "text": "Expression statement has no effect on contract state or control flow (e.g. `_amount;` or `this;`)."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "cwe": "CWE-561",
+                "precision": "high"
+              }
+            },
+            {
+              "id": "CG-002-TX-ORIGIN",
+              "name": "Use of tx.origin",
+              "shortDescription": {
+                "text": "tx.origin Authentication Bypass"
+              },
+              "fullDescription": {
+                "text": "Authentication or authorization logic relies on `tx.origin` instead of `msg.sender`."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "cwe": "CWE-284",
+                "precision": "high"
+              }
+            },
+            {
+              "id": "CG-005-ACCESS-CONTROL",
+              "name": "Missing Access Control on Sensitive Function",
+              "shortDescription": {
+                "text": "Missing Access Control on Sensitive Function"
+              },
+              "fullDescription": {
+                "text": "Sensitive administrative or state-altering function is publicly callable without caller authentication or role restrictions."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "cwe": "CWE-284",
+                "precision": "high"
+              }
+            },
+            {
+              "id": "CG-014-MISSING-ZERO-CHECK",
+              "name": "missing-zero-check",
+              "shortDescription": {
+                "text": "Missing Zero-Address Validation"
+              },
+              "fullDescription": {
+                "text": "Critical address parameter (e.g. new owner or token address) is assigned without checking against `address(0)`."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "cwe": "CWE-20",
+                "precision": "medium"
+              }
+            },
+            {
+              "id": "CG-003-CONTROLLED-DELEGATECALL",
+              "name": "Controlled delegatecall / Delegatecall to user-supplied address",
+              "shortDescription": {
+                "text": "Controlled / Arbitrary Delegatecall"
+              },
+              "fullDescription": {
+                "text": "The contract executes `delegatecall` to a user-supplied target address or with caller-controlled calldata without strict access control."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "cwe": "CWE-829",
+                "precision": "high"
+              }
+            },
+            {
+              "id": "CG-008-FLASHLOAN-ACCESS-CONTROL",
+              "name": "Lack of Access Control in Flash Loan",
+              "shortDescription": {
+                "text": "Lack of Access Control in Flash Loan Initiation"
+              },
+              "fullDescription": {
+                "text": "The flash loan function allows any sender to initiate a flash loan on behalf of an arbitrary receiver contract that pays a fixed fee."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "cwe": "CWE-284",
+                "precision": "high"
+              }
+            },
+            {
+              "id": "CG-017-FLOATING-PRAGMA",
+              "name": "Floating or Outdated Solidity Pragma",
+              "shortDescription": {
+                "text": "Floating or Outdated Solidity Pragma"
+              },
+              "fullDescription": {
+                "text": "Contract uses a floating compiler version (e.g. `^0.8.0`) or an outdated Solidity version vulnerable to known compiler bugs."
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              },
+              "properties": {
+                "cwe": "CWE-1038",
+                "precision": "medium"
+              }
+            },
+            {
+              "id": "CG-006-ARBITRARY-CALL",
+              "name": "Arbitrary External Call Execution",
+              "shortDescription": {
+                "text": "Arbitrary External Call Execution"
+              },
+              "fullDescription": {
+                "text": "Contract executes an external call to an arbitrary user-supplied target with user-supplied calldata with `msg.sender` as the contract itself."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "cwe": "CWE-841",
+                "precision": "high"
+              }
+            },
+            {
+              "id": "CG-021-UNCHECKED-ERC20-TRANSFER",
+              "name": "Unchecked ERC20 Transfer Return Value",
+              "shortDescription": {
+                "text": "Unchecked ERC20 Transfer Return Value"
+              },
+              "fullDescription": {
+                "text": "Standard ERC20 `.transfer()` or `.transferFrom()` return value is ignored, or contract interacts with non-standard tokens (like USDT) that do not return a boolean."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "cwe": "CWE-252",
+                "precision": "high"
+              }
+            },
+            {
+              "id": "CG-007-FLASHLOAN-DEPOSIT-REENTRANCY",
+              "name": "Deposit-based Flash Loan Reentrancy",
+              "shortDescription": {
+                "text": "Deposit-based Flash Loan Reentrancy"
+              },
+              "fullDescription": {
+                "text": "Flash loan pool checks repayment via total pool balance (`address(this).balance` or `token.balanceOf(this)`), allowing borrower to deposit the loan back into their internal balance during the callback."
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              },
+              "properties": {
+                "cwe": "CWE-841",
+                "precision": "high"
+              }
+            },
+            {
+              "id": "CG-011-INTEGER-OVERFLOW",
+              "name": "Integer Overflow / Underflow in Unchecked Block",
+              "shortDescription": {
+                "text": "Integer Overflow / Underflow in Unchecked Block"
+              },
+              "fullDescription": {
+                "text": "Arithmetic operation executed inside `unchecked { ... }` block (Solidity >=0.8) without precondition validation, or in Solidity <0.8 without SafeMath."
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              },
+              "properties": {
+                "cwe": "CWE-190",
+                "precision": "medium"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CG-001-REENTRANCY",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Reentrancy / State access after external call: In contract 'Reentrancy', function 'withdraw' performs an external call before updating persistent state (balances[msg.sender] -=). An attacker can reenter this function before balances are deducted. (Also reported by Mythril: Write to persistent state ('balances[msg.sender]') after external call ('msg.sender.call').)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Reentrancy.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 15,
+                  "endLine": 23,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": ""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-841",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer, mythril",
+            "impact": "Malicious contracts can reenter the vulnerable function recursively before internal state is updated, draining ether or token balances.",
+            "remediation": "1. Apply the Checks-Effects-Interactions (CEI) pattern: perform all internal state updates before making external calls.\n2. Use OpenZeppelin's `ReentrancyGuard` and apply the `nonReentrant` modifier to functions making external transfers."
+          }
+        },
+        {
+          "ruleId": "CG-012-USELESS-STATEMENT",
+          "level": "note",
+          "message": {
+            "text": "[LOW] Useless statement: The statement '_amount;' inside 'withdraw' has no effect and should be removed. (Also reported by Mythril: The statement '_amount;' inside withdraw has no effect and should be removed.)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Reentrancy.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 15,
+                  "endLine": 23,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": ""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-561",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer, mythril",
+            "impact": "Dead code increases contract size, wastes deployment gas, and confuses security audits.",
+            "remediation": "Remove useless expression statements from the codebase."
+          }
+        },
+        {
+          "ruleId": "CG-002-TX-ORIGIN",
+          "level": "warning",
+          "message": {
+            "text": "[MEDIUM] Use of tx.origin: Function 'changeOwner' in contract 'Telephone' uses 'tx.origin' for authorization. An attacker can exploit this via phishing or malicious proxy contracts to impersonate the user. (Also reported by Mythril: Use of tx.origin for authorization may result in a vulnerability if the user is tricked into calling a malicious contract.)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Telephone.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 11,
+                  "endLine": 15,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": ""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-284",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer, mythril",
+            "impact": "If an authorized user executes a transaction on a phishing or malicious smart contract, the contract can make calls back into the vulnerable contract and impersonate the user.",
+            "remediation": "Replace all authorization checks using `tx.origin` with `msg.sender`."
+          }
+        },
+        {
+          "ruleId": "CG-005-ACCESS-CONTROL",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Missing Access Control on Sensitive Function: Sensitive function 'changeOwner' in contract 'Telephone' is publicly accessible without access control modifiers (e.g. onlyOwner) or caller validation checks."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Telephone.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 11,
+                  "endLine": 15,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "    function changeOwner(address _owner) public {\n        if (tx.origin != msg.sender) {\n            owner = _owner;\n        }\n    }"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-284",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer",
+            "impact": "Any external caller can trigger privileged operations, change critical addresses, mint tokens, or drain protocol funds.",
+            "remediation": "Apply `onlyOwner` or OpenZeppelin `AccessControl` (`onlyRole(...)`) modifiers to all sensitive functions."
+          }
+        },
+        {
+          "ruleId": "CG-014-MISSING-ZERO-CHECK",
+          "level": "note",
+          "message": {
+            "text": "[LOW] missing-zero-check: Function 'changeOwner' in contract 'Telephone' assigns critical address variables without verifying that the address parameter is non-zero (address(0))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Telephone.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 11,
+                  "endLine": 15,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "    function changeOwner(address _owner) public {\n        if (tx.origin != msg.sender) {\n            owner = _owner;\n        }\n    }"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-20",
+            "confidence": "Low",
+            "sourceTool": "ast_analyzer",
+            "impact": "Accidental transfer of ownership to address 0 permanently locks the contract.",
+            "remediation": "Add `require(target != address(0), 'Zero address');` before assigning critical addresses."
+          }
+        },
+        {
+          "ruleId": "CG-005-ACCESS-CONTROL",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Missing Access Control on Sensitive Function: Sensitive function 'pwn' in contract 'Delegate' is publicly accessible without access control modifiers (e.g. onlyOwner) or caller validation checks."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Delegation.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 11,
+                  "endLine": 13,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "    function pwn() public {\n        owner = msg.sender;\n    }"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-284",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer",
+            "impact": "Any external caller can trigger privileged operations, change critical addresses, mint tokens, or drain protocol funds.",
+            "remediation": "Apply `onlyOwner` or OpenZeppelin `AccessControl` (`onlyRole(...)`) modifiers to all sensitive functions."
+          }
+        },
+        {
+          "ruleId": "CG-014-MISSING-ZERO-CHECK",
+          "level": "note",
+          "message": {
+            "text": "[LOW] missing-zero-check: Function 'constructor' in contract 'Delegate' assigns critical address variables without verifying that the address parameter is non-zero (address(0))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Delegation.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 7,
+                  "endLine": 9,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "    constructor(address _owner) {\n        owner = _owner;\n    }"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-20",
+            "confidence": "Low",
+            "sourceTool": "ast_analyzer",
+            "impact": "Accidental transfer of ownership to address 0 permanently locks the contract.",
+            "remediation": "Add `require(target != address(0), 'Zero address');` before assigning critical addresses."
+          }
+        },
+        {
+          "ruleId": "CG-003-CONTROLLED-DELEGATECALL",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Controlled delegatecall / Delegatecall to user-supplied address: Function 'fallback' in contract 'Delegation' executes delegatecall in an unauthenticated public/fallback context, exposing storage slots and ownership to takeover. (Also reported by Mythril: The fallback function forwards arbitrary data via delegatecall to a user-supplied target address.)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Delegation.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 25,
+                  "endLine": 30,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": ""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-829",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer, mythril",
+            "impact": "An attacker can point `delegatecall` to a malicious contract and execute arbitrary bytecode in the caller's context, overwriting storage slots or taking total ownership.",
+            "remediation": "1. Avoid `delegatecall` to dynamic or user-supplied addresses.\n2. Hardcode trusted implementation contracts or restrict delegatecalls to verified administrative proxy registries with strict access controls."
+          }
+        },
+        {
+          "ruleId": "CG-012-USELESS-STATEMENT",
+          "level": "note",
+          "message": {
+            "text": "[LOW] Useless statement: The statement 'this;' inside 'fallback' has no effect and should be removed."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Delegation.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 25,
+                  "endLine": 30,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "this;"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-561",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer",
+            "impact": "Dead code increases contract size, wastes deployment gas, and confuses security audits.",
+            "remediation": "Remove useless expression statements from the codebase."
+          }
+        },
+        {
+          "ruleId": "CG-014-MISSING-ZERO-CHECK",
+          "level": "note",
+          "message": {
+            "text": "[LOW] missing-zero-check: Function 'constructor' in contract 'Delegation' assigns critical address variables without verifying that the address parameter is non-zero (address(0))."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "Delegation.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 20,
+                  "endLine": 23,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "    constructor(address _delegateAddress) {\n        owner = msg.sender;\n        delegate = Delegate(_delegateAddress);\n    }"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-20",
+            "confidence": "Low",
+            "sourceTool": "ast_analyzer",
+            "impact": "Accidental transfer of ownership to address 0 permanently locks the contract.",
+            "remediation": "Add `require(target != address(0), 'Zero address');` before assigning critical addresses."
+          }
+        },
+        {
+          "ruleId": "CG-008-FLASHLOAN-ACCESS-CONTROL",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Lack of Access Control in Flash Loan: Function 'flashLoan' in contract 'NaiveReceiverLenderPool' allows any external caller to trigger a flash loan on behalf of an arbitrary receiver contract, forcing the receiver to incur loan fees."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "NaiveReceiverLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 35,
+                  "endLine": 61,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "    function flashLoan(\n        IERC3156FlashBorrower receiver,\n        address token,\n        uint256 amount,\n        bytes calldata data\n    ) external override nonReentrant returns (bool) {\n        if (token != ETH) {\n            revert UnsupportedCurrency();\n        }\n        "
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-284",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer",
+            "impact": "An attacker can repeatedly trigger flash loans for victim contracts, draining the victim contract's funds through forced fee payments.",
+            "remediation": "Ensure that `msg.sender == address(receiver)` or verify an explicit caller approval before initiating flash loans with fee liability on the receiver."
+          }
+        },
+        {
+          "ruleId": "CG-017-FLOATING-PRAGMA",
+          "level": "note",
+          "message": {
+            "text": "[LOW] Floating or Outdated Solidity Pragma: Contract 'NaiveReceiverLenderPool' uses a floating or unbounded pragma statement: 'pragma solidity ^0.8.0;'. Contracts should lock pragma to a specific compiler version for production deployments."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "NaiveReceiverLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "pragma solidity ^0.8.0;"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-1038",
+            "confidence": "Low",
+            "sourceTool": "ast_analyzer",
+            "impact": "Contracts deployed with untested newer compiler versions or outdated compilers may inherit compiler vulnerabilities.",
+            "remediation": "Lock the Solidity pragma to a specific, well-tested compiler version (e.g. `pragma solidity 0.8.24;`)."
+          }
+        },
+        {
+          "ruleId": "CG-008-FLASHLOAN-ACCESS-CONTROL",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Lack of Access Control in Flash Loan: The flashLoan function permits any sender to trigger a flash loan for an arbitrary receiver. This forces the receiver contract to pay a fixed fee of 1 ether, allowing malicious parties to drain the receiver's funds via repeated invocations."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "NaiveReceiverLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": ""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-284",
+            "confidence": "High",
+            "sourceTool": "llm_judge",
+            "impact": "Unauthorized users can invoke administrative operations or withdraw funds.",
+            "remediation": "Ensure that `msg.sender == address(receiver)` or verify an explicit caller approval before initiating flash loans with fee liability on the receiver."
+          }
+        },
+        {
+          "ruleId": "CG-006-ARBITRARY-CALL",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Arbitrary External Call Execution: Function 'flashLoan' in contract 'TrusterLenderPool' executes an arbitrary external call on a caller-supplied target address with arbitrary calldata in the pool's context."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "TrusterLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 23,
+                  "endLine": 42,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "    function flashLoan(\n        uint256 amount,\n        address borrower,\n        address target,\n        bytes calldata data\n    ) external nonReentrant returns (bool) {\n        uint256 balanceBefore = token.balanceOf(address(this));\n\n        token.transfer(borrower, amount);\n"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-841",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer",
+            "impact": "Attacker can supply an ERC20 token address as `target` and `approve(attacker, max)` as `data`, stealing all tokens approved for or owned by the contract.",
+            "remediation": "Do not allow arbitrary target addresses and calldata in external calls. Whitelist allowed contracts and selectors, or execute callbacks via dedicated interfaces."
+          }
+        },
+        {
+          "ruleId": "CG-021-UNCHECKED-ERC20-TRANSFER",
+          "level": "warning",
+          "message": {
+            "text": "[MEDIUM] Unchecked ERC20 Transfer Return Value: Function 'flashLoan' in contract 'TrusterLenderPool' executes ERC20 transfer/transferFrom without verifying the returned boolean value or using SafeERC20."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "TrusterLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 23,
+                  "endLine": 42,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "token.transfer(borrower, amount)"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-252",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer",
+            "impact": "Failed transfers will fail silently without reverting, causing internal balances to update while tokens never actually moved.",
+            "remediation": "Use OpenZeppelin's `SafeERC20` library and replace `token.transfer(...)` with `token.safeTransfer(...)`."
+          }
+        },
+        {
+          "ruleId": "CG-017-FLOATING-PRAGMA",
+          "level": "note",
+          "message": {
+            "text": "[LOW] Floating or Outdated Solidity Pragma: Contract 'TrusterLenderPool' uses a floating or unbounded pragma statement: 'pragma solidity ^0.8.0;'. Contracts should lock pragma to a specific compiler version for production deployments."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "TrusterLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "pragma solidity ^0.8.0;"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-1038",
+            "confidence": "Low",
+            "sourceTool": "ast_analyzer",
+            "impact": "Contracts deployed with untested newer compiler versions or outdated compilers may inherit compiler vulnerabilities.",
+            "remediation": "Lock the Solidity pragma to a specific, well-tested compiler version (e.g. `pragma solidity 0.8.24;`)."
+          }
+        },
+        {
+          "ruleId": "CG-006-ARBITRARY-CALL",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Arbitrary External Call Execution: The flashLoan function executes an arbitrary external call on a user-supplied target with caller-provided data, where the sender is the pool contract itself. Attackers can leverage this behavior to invoke approve() on the pool's token, authorizing withdrawal of its entire balance."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "TrusterLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": ""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-841",
+            "confidence": "High",
+            "sourceTool": "llm_judge",
+            "impact": "Attacker can execute arbitrary logic in contract context, leading to token theft or approval drain.",
+            "remediation": "Do not allow arbitrary target addresses and calldata in external calls. Whitelist allowed contracts and selectors, or execute callbacks via dedicated interfaces."
+          }
+        },
+        {
+          "ruleId": "CG-007-FLASHLOAN-DEPOSIT-REENTRANCY",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Deposit-based Flash Loan Reentrancy: Contract 'SideEntranceLenderPool' allows borrowers to deposit borrowed flash loan funds back into the pool via deposit(), satisfying the pool balance check while simultaneously increasing the borrower's withdrawable balance."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SideEntranceLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 35,
+                  "endLine": 46,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "    function flashLoan(uint256 amount) external {\n        uint256 balanceBefore = address(this).balance;\n\n        // VULNERABILITY: Flash loan repayment is checked by looking at address(this).balance.\n        // During the flash loan callback, the receiver can call deposit() to credit their internal balance,\n        // which returns the funds to the pool to satisfy the balanceBefore check, but allows them to withdraw the funds later.\n        IFlashLoanEtherReceiver(msg.sender).execute{value: amount}();\n\n        if (address(this).balance < balanceBefore) {\n            revert RepayFailed();"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-841",
+            "confidence": "High",
+            "sourceTool": "ast_analyzer",
+            "impact": "Attacker satisfies the pool repayment balance check while simultaneously crediting their internal deposit account, allowing them to withdraw the pool's entire balance afterwards.",
+            "remediation": "Separate flash loan repayment tracking from internal user balance deposits. Do not allow `deposit()` during an active flash loan, or track loan repayments directly."
+          }
+        },
+        {
+          "ruleId": "CG-011-INTEGER-OVERFLOW",
+          "level": "warning",
+          "message": {
+            "text": "[MEDIUM] Integer Overflow / Underflow in Unchecked Block: Function 'deposit' in contract 'SideEntranceLenderPool' executes arithmetic operations inside an unchecked { ... } block without boundary assertions."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SideEntranceLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 21,
+                  "endLine": 26,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "balances[msg.sender] += msg.value;"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-190",
+            "confidence": "Low",
+            "sourceTool": "ast_analyzer",
+            "impact": "Unbounded decrement or increment may wrap around, allowing attackers to inflate balances or bypass balance checks.",
+            "remediation": "Ensure preconditions (`require(a >= b)`) are verified before entering `unchecked` blocks."
+          }
+        },
+        {
+          "ruleId": "CG-017-FLOATING-PRAGMA",
+          "level": "note",
+          "message": {
+            "text": "[LOW] Floating or Outdated Solidity Pragma: Contract 'SideEntranceLenderPool' uses a floating or unbounded pragma statement: 'pragma solidity ^0.8.0;'. Contracts should lock pragma to a specific compiler version for production deployments."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SideEntranceLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 2,
+                  "endLine": 2,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": "pragma solidity ^0.8.0;"
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-1038",
+            "confidence": "Low",
+            "sourceTool": "ast_analyzer",
+            "impact": "Contracts deployed with untested newer compiler versions or outdated compilers may inherit compiler vulnerabilities.",
+            "remediation": "Lock the Solidity pragma to a specific, well-tested compiler version (e.g. `pragma solidity 0.8.24;`)."
+          }
+        },
+        {
+          "ruleId": "CG-001-REENTRANCY",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] State access after external call: Write to persistent state ('balances[msg.sender]') after external call ('msg.sender.call')."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SideEntranceLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 28,
+                  "endLine": 33,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": ""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-841",
+            "confidence": "High",
+            "sourceTool": "mythril",
+            "impact": "High severity security vulnerability.",
+            "remediation": ""
+          }
+        },
+        {
+          "ruleId": "CG-007-FLASHLOAN-DEPOSIT-REENTRANCY",
+          "level": "error",
+          "message": {
+            "text": "[HIGH] Deposit-based Flash Loan Reentrancy: The flashLoan function validates repayment by checking the total balance of the contract. However, an attacker can deposit the borrowed funds back into the pool using the deposit() function. This satisfies the balance check while simultaneously increasing the attacker's internal tracked balance, allowing them to withdraw the funds later."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "SideEntranceLenderPool.sol",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 1,
+                  "endLine": 1,
+                  "startColumn": 1,
+                  "endColumn": 80,
+                  "snippet": {
+                    "text": ""
+                  }
+                }
+              }
+            }
+          ],
+          "properties": {
+            "cwe": "CWE-841",
+            "confidence": "High",
+            "sourceTool": "llm_judge",
+            "impact": "Attacker can drain contract funds via recursive reentrant callbacks before state updates.",
+            "remediation": "1. Apply the Checks-Effects-Interactions (CEI) pattern: perform all internal state updates before making external calls.\n2. Use OpenZeppelin's `ReentrancyGuard` and apply the `nonReentrant` modifier to functions making external transfers."
+          }
+        }
+      ]
+    }
+  ]
+}
