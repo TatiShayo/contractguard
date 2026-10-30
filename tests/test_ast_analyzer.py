@@ -7,11 +7,9 @@ import pytest
 from ast_analyzer import ASTAnalyzer, SolidityContract, SolidityFunction
 from models import Finding, Severity, Confidence
 
-
 @pytest.fixture
 def analyzer():
     return ASTAnalyzer()
-
 
 def test_reentrancy_vulnerable_pattern(analyzer):
     code = """
@@ -35,7 +33,6 @@ def test_reentrancy_vulnerable_pattern(analyzer):
     assert reentrancy_f.severity == "high"
     assert reentrancy_f.cwe_id == "CWE-841"
 
-
 def test_reentrancy_checks_effects_interactions_safe(analyzer):
     code = """
     // SPDX-License-Identifier: MIT
@@ -55,7 +52,6 @@ def test_reentrancy_checks_effects_interactions_safe(analyzer):
     findings = analyzer.analyze_source(code, "SafeBank.sol")
     reentrancy_f = [f for f in findings if f.rule_id == "CG-001-REENTRANCY"]
     assert len(reentrancy_f) == 0
-
 
 def test_reentrancy_with_reentrancyguard_modifier(analyzer):
     code = """
@@ -77,7 +73,6 @@ def test_reentrancy_with_reentrancyguard_modifier(analyzer):
     reentrancy_f = [f for f in findings if f.rule_id == "CG-001-REENTRANCY"]
     assert len(reentrancy_f) == 0
 
-
 def test_reentrancy_with_send_and_transfer(analyzer):
     code = """
     contract TransferBank {
@@ -91,7 +86,6 @@ def test_reentrancy_with_send_and_transfer(analyzer):
     """
     findings = analyzer.analyze_source(code, "TransferBank.sol")
     assert any(f.rule_id == "CG-001-REENTRANCY" for f in findings)
-
 
 def test_tx_origin_in_require(analyzer):
     code = """
@@ -110,7 +104,6 @@ def test_tx_origin_in_require(analyzer):
     assert tx_f.severity == "medium"
     assert tx_f.cwe_id == "CWE-284"
 
-
 def test_tx_origin_in_if_condition(analyzer):
     code = """
     contract Telephone {
@@ -126,7 +119,6 @@ def test_tx_origin_in_if_condition(analyzer):
     findings = analyzer.analyze_source(code, "Telephone.sol")
     assert any(f.rule_id == "CG-002-TX-ORIGIN" for f in findings)
 
-
 def test_tx_origin_safe_msg_sender(analyzer):
     code = """
     contract MsgSenderAuth {
@@ -141,7 +133,6 @@ def test_tx_origin_safe_msg_sender(analyzer):
     """
     findings = analyzer.analyze_source(code, "MsgSenderAuth.sol")
     assert not any(f.rule_id == "CG-002-TX-ORIGIN" for f in findings)
-
 
 def test_controlled_delegatecall_in_fallback(analyzer):
     code = """
@@ -163,7 +154,6 @@ def test_controlled_delegatecall_in_fallback(analyzer):
     assert del_f.severity == "high"
     assert del_f.cwe_id == "CWE-829"
 
-
 def test_controlled_delegatecall_guarded_by_onlyowner(analyzer):
     code = """
     contract SafeProxy {
@@ -184,7 +174,6 @@ def test_controlled_delegatecall_guarded_by_onlyowner(analyzer):
     findings = analyzer.analyze_source(code, "SafeProxy.sol")
     assert not any(f.rule_id == "CG-003-CONTROLLED-DELEGATECALL" for f in findings)
 
-
 def test_unchecked_low_level_call(analyzer):
     code = """
     contract UncheckedCaller {
@@ -198,7 +187,6 @@ def test_unchecked_low_level_call(analyzer):
     uncheck_f = next(f for f in findings if f.rule_id == "CG-004-UNCHECKED-CALL")
     assert uncheck_f.severity == "medium"
 
-
 def test_checked_low_level_call_with_require(analyzer):
     code = """
     contract CheckedCaller {
@@ -210,7 +198,6 @@ def test_checked_low_level_call_with_require(analyzer):
     """
     findings = analyzer.analyze_source(code, "CheckedCaller.sol")
     assert not any(f.rule_id == "CG-004-UNCHECKED-CALL" for f in findings)
-
 
 def test_missing_access_control_on_set_owner(analyzer):
     code = """
@@ -227,7 +214,6 @@ def test_missing_access_control_on_set_owner(analyzer):
     ac_f = next(f for f in findings if f.rule_id == "CG-005-ACCESS-CONTROL")
     assert ac_f.severity == "high"
 
-
 def test_missing_access_control_on_pwn(analyzer):
     code = """
     contract Delegate {
@@ -240,7 +226,6 @@ def test_missing_access_control_on_pwn(analyzer):
     """
     findings = analyzer.analyze_source(code, "Delegate.sol")
     assert any(f.rule_id == "CG-005-ACCESS-CONTROL" for f in findings)
-
 
 def test_access_control_present_with_only_owner(analyzer):
     code = """
@@ -260,7 +245,6 @@ def test_access_control_present_with_only_owner(analyzer):
     findings = analyzer.analyze_source(code, "ProtectedOwner.sol")
     assert not any(f.rule_id == "CG-005-ACCESS-CONTROL" for f in findings)
 
-
 def test_access_control_present_with_only_role(analyzer):
     code = """
     contract RoleProtected {
@@ -273,7 +257,6 @@ def test_access_control_present_with_only_role(analyzer):
     """
     findings = analyzer.analyze_source(code, "RoleProtected.sol")
     assert not any(f.rule_id == "CG-005-ACCESS-CONTROL" for f in findings)
-
 
 def test_arbitrary_call_truster_pattern(analyzer):
     code = """
@@ -294,7 +277,6 @@ def test_arbitrary_call_truster_pattern(analyzer):
     arb_f = next(f for f in findings if f.rule_id == "CG-006-ARBITRARY-CALL")
     assert arb_f.severity == "high"
 
-
 def test_arbitrary_call_safe_static_target(analyzer):
     code = """
     contract SafeCaller {
@@ -312,7 +294,6 @@ def test_arbitrary_call_safe_static_target(analyzer):
     """
     findings = analyzer.analyze_source(code, "SafeCaller.sol")
     assert not any(f.rule_id == "CG-006-ARBITRARY-CALL" for f in findings)
-
 
 def test_flashloan_deposit_reentrancy_side_entrance(analyzer):
     code = """
@@ -343,7 +324,6 @@ def test_flashloan_deposit_reentrancy_side_entrance(analyzer):
     fl_f = next(f for f in findings if f.rule_id == "CG-007-FLASHLOAN-DEPOSIT-REENTRANCY")
     assert fl_f.severity == "high"
 
-
 def test_flashloan_without_deposit_safe(analyzer):
     code = """
     contract CleanFlashLender {
@@ -356,7 +336,6 @@ def test_flashloan_without_deposit_safe(analyzer):
     """
     findings = analyzer.analyze_source(code, "CleanFlashLender.sol")
     assert not any(f.rule_id == "CG-007-FLASHLOAN-DEPOSIT-REENTRANCY" for f in findings)
-
 
 def test_flashloan_access_control_naive_receiver(analyzer):
     code = """
@@ -380,7 +359,6 @@ def test_flashloan_access_control_naive_receiver(analyzer):
     na_f = next(f for f in findings if f.rule_id == "CG-008-FLASHLOAN-ACCESS-CONTROL")
     assert na_f.severity == "high"
 
-
 def test_flashloan_access_control_with_caller_check_safe(analyzer):
     code = """
     contract ProtectedFlashLender {
@@ -402,7 +380,6 @@ def test_flashloan_access_control_with_caller_check_safe(analyzer):
     findings = analyzer.analyze_source(code, "ProtectedFlashLender.sol")
     assert not any(f.rule_id == "CG-008-FLASHLOAN-ACCESS-CONTROL" for f in findings)
 
-
 def test_spot_price_oracle_manipulation(analyzer):
     code = """
     contract PoolConsumer {
@@ -414,7 +391,6 @@ def test_spot_price_oracle_manipulation(analyzer):
     """
     findings = analyzer.analyze_source(code, "PoolConsumer.sol")
     assert any(f.rule_id == "CG-009-PRICE-ORACLE-MANIPULATION" for f in findings)
-
 
 def test_price_oracle_with_chainlink_safe(analyzer):
     code = """
@@ -429,7 +405,6 @@ def test_price_oracle_with_chainlink_safe(analyzer):
     findings = analyzer.analyze_source(code, "SafeOracleConsumer.sol")
     assert not any(f.rule_id == "CG-009-PRICE-ORACLE-MANIPULATION" for f in findings)
 
-
 def test_selfdestruct_detector(analyzer):
     code = """
     contract Destructible {
@@ -442,7 +417,6 @@ def test_selfdestruct_detector(analyzer):
     assert any(f.rule_id == "CG-010-SELFDESTRUCT" for f in findings)
     sd_f = next(f for f in findings if f.rule_id == "CG-010-SELFDESTRUCT")
     assert sd_f.severity == "critical" or sd_f.severity == "high"
-
 
 def test_integer_overflow_unchecked_block(analyzer):
     code = """
@@ -459,7 +433,6 @@ def test_integer_overflow_unchecked_block(analyzer):
     findings = analyzer.analyze_source(code, "UncheckedMath.sol")
     assert any(f.rule_id == "CG-011-INTEGER-OVERFLOW" for f in findings)
 
-
 def test_useless_statement_detector(analyzer):
     code = """
     contract DeadCodeContract {
@@ -471,7 +444,6 @@ def test_useless_statement_detector(analyzer):
     """
     findings = analyzer.analyze_source(code, "DeadCodeContract.sol")
     assert any(f.rule_id == "CG-012-USELESS-STATEMENT" for f in findings)
-
 
 def test_unprotected_initialize(analyzer):
     code = """
@@ -486,7 +458,6 @@ def test_unprotected_initialize(analyzer):
     findings = analyzer.analyze_source(code, "MyProxyImpl.sol")
     assert any(f.rule_id == "CG-013-UNPROTECTED-INITIALIZE" for f in findings)
 
-
 def test_protected_initialize_with_initializer(analyzer):
     code = """
     contract ProtectedProxyImpl {
@@ -499,7 +470,6 @@ def test_protected_initialize_with_initializer(analyzer):
     """
     findings = analyzer.analyze_source(code, "ProtectedProxyImpl.sol")
     assert not any(f.rule_id == "CG-013-UNPROTECTED-INITIALIZE" for f in findings)
-
 
 def test_missing_zero_check(analyzer):
     code = """
@@ -514,7 +484,6 @@ def test_missing_zero_check(analyzer):
     """
     findings = analyzer.analyze_source(code, "ZeroCheckContract.sol")
     assert any(f.rule_id == "CG-014-MISSING-ZERO-CHECK" for f in findings)
-
 
 def test_inline_suppression_disable_next_line(analyzer):
     code = """
@@ -531,7 +500,6 @@ def test_inline_suppression_disable_next_line(analyzer):
     findings = analyzer.analyze_source(code, "SuppressedBank.sol")
     assert not any(f.rule_id == "CG-001-REENTRANCY" for f in findings)
 
-
 def test_inline_suppression_slither_disable(analyzer):
     code = """
     contract SuppressedSlitherBank {
@@ -547,7 +515,6 @@ def test_inline_suppression_slither_disable(analyzer):
     findings = analyzer.analyze_source(code, "SuppressedSlitherBank.sol")
     assert not any(f.rule_id == "CG-001-REENTRANCY" for f in findings)
 
-
 def test_ast_parser_resilience_malformed_solidity(analyzer):
     malformed_code = """
     contract Incomplete {
@@ -558,11 +525,9 @@ def test_ast_parser_resilience_malformed_solidity(analyzer):
     findings = analyzer.analyze_source(malformed_code, "Incomplete.sol")
     assert isinstance(findings, list)
 
-
 def test_ast_parser_resilience_empty_string(analyzer):
     findings = analyzer.analyze_source("", "Empty.sol")
     assert findings == []
-
 
 def test_ast_parser_resilience_comments_only(analyzer):
     comments_code = """
@@ -573,12 +538,10 @@ def test_ast_parser_resilience_comments_only(analyzer):
     findings = analyzer.analyze_source(comments_code, "Comments.sol")
     assert findings == []
 
-
 def test_ast_parser_resilience_unicode_and_huge_source(analyzer):
     unicode_source = "contract UnicodeTest { string s = '\\u2705\\U0001f512'; }" + ("\n// padding" * 500)
     findings = analyzer.analyze_source(unicode_source, "UnicodeTest.sol")
     assert isinstance(findings, list)
-
 
 def test_arbitrary_eth_transfer_detector(analyzer):
     code = """
@@ -593,7 +556,6 @@ def test_arbitrary_eth_transfer_detector(analyzer):
     f = next(f for f in findings if f.rule_id == "CG-015-ARBITRARY-SEND-ETH")
     assert f.severity == "high"
     assert f.cwe_id == "CWE-284"
-
 
 def test_arbitrary_eth_transfer_safe_with_only_owner(analyzer):
     code = """
@@ -610,7 +572,6 @@ def test_arbitrary_eth_transfer_safe_with_only_owner(analyzer):
     """
     findings = analyzer.analyze_source(code, "SafeDrainablePool.sol")
     assert not any(f.rule_id == "CG-015-ARBITRARY-SEND-ETH" for f in findings)
-
 
 def test_uninitialized_local_storage_pointer_detector(analyzer):
     code = """
@@ -633,7 +594,6 @@ def test_uninitialized_local_storage_pointer_detector(analyzer):
     assert f.severity == "high"
     assert f.cwe_id == "CWE-824"
 
-
 def test_uninitialized_local_storage_pointer_safe_memory(analyzer):
     code = """
     contract StorageTestSafe {
@@ -652,7 +612,6 @@ def test_uninitialized_local_storage_pointer_safe_memory(analyzer):
     findings = analyzer.analyze_source(code, "StorageTestSafe.sol")
     assert not any(f.rule_id == "CG-016-UNINITIALIZED-STORAGE" for f in findings)
 
-
 def test_floating_pragma_detector(analyzer):
     code = """
     pragma solidity ^0.8.20;
@@ -664,7 +623,6 @@ def test_floating_pragma_detector(analyzer):
     assert f.severity == "low"
     assert f.cwe_id == "CWE-1038"
 
-
 def test_locked_pragma_safe(analyzer):
     code = """
     pragma solidity 0.8.24;
@@ -672,7 +630,6 @@ def test_locked_pragma_safe(analyzer):
     """
     findings = analyzer.analyze_source(code, "LockedPragmaTest.sol")
     assert not any(f.rule_id == "CG-017-FLOATING-PRAGMA" for f in findings)
-
 
 def test_multiple_contracts_in_single_file(analyzer):
     code = """
@@ -698,7 +655,6 @@ def test_multiple_contracts_in_single_file(analyzer):
     assert any(f.contract_name == "ContractA" and f.rule_id == "CG-005-ACCESS-CONTROL" for f in findings)
     assert any(f.contract_name == "ContractB" and f.rule_id == "CG-001-REENTRANCY" for f in findings)
 
-
 def test_library_and_interface_handling(analyzer):
     code = """
     pragma solidity 0.8.24;
@@ -718,7 +674,6 @@ def test_library_and_interface_handling(analyzer):
     high_findings = [f for f in findings if f.severity in ("critical", "high")]
     assert len(high_findings) == 0
 
-
 def test_inline_multi_rule_suppression(analyzer):
     code = """
     pragma solidity 0.8.24;
@@ -736,7 +691,6 @@ def test_inline_multi_rule_suppression(analyzer):
     assert not any(f.rule_id == "CG-005-ACCESS-CONTROL" for f in findings)
     assert not any(f.rule_id == "CG-014-MISSING-ZERO-CHECK" for f in findings)
 
-
 def test_inline_disable_all_suppression(analyzer):
     code = """
     pragma solidity 0.8.24;
@@ -752,4 +706,3 @@ def test_inline_disable_all_suppression(analyzer):
     """
     findings = analyzer.analyze_source(code, "DisableAll.sol")
     assert not any(f.rule_id == "CG-005-ACCESS-CONTROL" for f in findings)
-

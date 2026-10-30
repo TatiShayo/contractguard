@@ -16,7 +16,6 @@ from rules import get_remediation_for_rule
 
 logger = logging.getLogger(__name__)
 
-
 class LLMFinding(Finding):
     def __init__(
         self,
@@ -47,7 +46,6 @@ class LLMFinding(Finding):
             impact=impact,
             remediation=remed,
         )
-
 
 def review_economic_logic(contract_source: str, existing_findings: Optional[List[Finding]] = None) -> List[Finding]:
     """
@@ -111,7 +109,6 @@ def review_economic_logic(contract_source: str, existing_findings: Optional[List
 
     return _review_economic_logic_fallback(contract_source, existing_findings)
 
-
 def _call_openai(api_key: str, prompt: str) -> List[Finding]:
     url = "https://api.openai.com/v1/chat/completions"
     headers = {
@@ -132,7 +129,6 @@ def _call_openai(api_key: str, prompt: str) -> List[Finding]:
         text = res_data["choices"][0]["message"]["content"].strip()
         return _parse_llm_json(text)
 
-
 def _call_gemini(api_key: str, prompt: str) -> List[Finding]:
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key={api_key}"
     headers = {
@@ -152,7 +148,6 @@ def _call_gemini(api_key: str, prompt: str) -> List[Finding]:
         res_data = json.loads(response.read().decode("utf-8"))
         text = res_data["candidates"][0]["content"]["parts"][0]["text"].strip()
         return _parse_llm_json(text)
-
 
 def _parse_llm_json(text: str) -> List[Finding]:
     """
@@ -237,11 +232,9 @@ def _parse_llm_json(text: str) -> List[Finding]:
         ))
     return findings
 
-
 def _review_economic_logic_fallback(contract_source: str, existing_findings: List[Finding]) -> List[Finding]:
     findings: List[Finding] = []
 
-    # 1. NaiveReceiverLenderPool pattern
     if "NaiveReceiverLenderPool" in contract_source or "receiver.onFlashLoan(msg.sender" in contract_source:
         findings.append(LLMFinding(
             severity="high",
@@ -251,7 +244,6 @@ def _review_economic_logic_fallback(contract_source: str, existing_findings: Lis
             confidence="High"
         ))
 
-    # 2. TrusterLenderPool pattern
     if "TrusterLenderPool" in contract_source or "target.functionCall(data)" in contract_source:
         findings.append(LLMFinding(
             severity="high",
@@ -261,7 +253,6 @@ def _review_economic_logic_fallback(contract_source: str, existing_findings: Lis
             confidence="High"
         ))
 
-    # 3. SideEntranceLenderPool pattern
     if "SideEntranceLenderPool" in contract_source or "IFlashLoanEtherReceiver(msg.sender).execute{value: amount}()" in contract_source:
         findings.append(LLMFinding(
             severity="high",

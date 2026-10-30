@@ -14,11 +14,9 @@ from mythril_wrapper import run_mythril, reconcile
 from economic_logic_judge import review_economic_logic
 from report_generator import generate_report, generate_sarif_report, generate_json_report, calculate_security_score
 
-
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    
-    # 1. Define fixtures and their intended vulnerabilities / detection rules
+
     vulnerable_challenges = [
         {
             "name": "Reentrancy.sol",
@@ -115,32 +113,28 @@ def main():
     correctly_flagged_count = 0
 
     print("Starting ContractGuard Validation Pipeline Run (Hermes v6)...")
-    
+
     # Process vulnerable challenges
     for challenge in vulnerable_challenges:
         name = challenge["name"]
         path = challenge["path"]
         print(f"Processing challenge: {name}...")
-        
+
         try:
-            # 1. Run Slither
             try:
                 slither_f = run_slither(path)
             except Exception as e:
                 print(f"  [!] Slither failed on {name}: {e}")
                 slither_f = []
-                
-            # 2. Run Mythril
+
             try:
                 mythril_f = run_mythril(path)
             except Exception as e:
                 print(f"  [!] Mythril failed on {name}: {e}")
                 mythril_f = []
-                
-            # 3. Reconcile
+
             reconciled_f = reconcile(slither_f, mythril_f)
-            
-            # 4. Run LLM economic logic judge
+
             try:
                 with open(path, "r", encoding="utf-8") as f:
                     source = f.read()
@@ -148,24 +142,23 @@ def main():
             except Exception as e:
                 print(f"  [!] LLM Judge failed on {name}: {e}")
                 llm_f = []
-                
+
             # Combine findings
             challenge_findings = reconciled_f + llm_f
-            
+
             # Assign contract name
             for f in challenge_findings:
                 f.contract_name = name
-                
+
             all_findings.extend(challenge_findings)
-            
-            # Check if intended vulnerability was flagged
+
             flagged = challenge["check_fn"](challenge_findings)
             if flagged:
                 correctly_flagged_count += 1
                 status = "PASS"
             else:
                 status = "FAIL"
-                
+
             results_breakdown.append({
                 "name": name,
                 "type": "vulnerable",
@@ -174,9 +167,9 @@ def main():
                 "status": status,
                 "findings_count": len(challenge_findings)
             })
-            
+
             print(f"  -> {status}: Findings count = {len(challenge_findings)}")
-            
+
         except Exception as e:
             print(f"  [ERROR] Pipeline failed on {name}: {e}")
             results_breakdown.append({
@@ -193,7 +186,7 @@ def main():
         name = control["name"]
         path = control["path"]
         print(f"Processing control contract: {name}...")
-        
+
         try:
             try:
                 slither_f = run_slither(path)
@@ -210,16 +203,16 @@ def main():
                 llm_f = review_economic_logic(source, reconciled_f)
             except Exception:
                 llm_f = []
-                
+
             control_findings = reconciled_f + llm_f
             for f in control_findings:
                 f.contract_name = name
-                
+
             all_findings.extend(control_findings)
-            
+
             passed_control = control["check_fn"](control_findings)
             status = "PASS" if passed_control else "FAIL"
-            
+
             results_breakdown.append({
                 "name": name,
                 "type": "control",
@@ -283,7 +276,7 @@ def main():
     results_md.append("## 📋 Challenge Breakdown")
     results_md.append("| Challenge / Contract | Type | Intended Vulnerability | Correctly Flagged? | Findings Count | Status |")
     results_md.append("| --- | --- | --- | --- | --- | --- |")
-    
+
     for r in results_breakdown:
         flagged_str = "Yes" if r["flagged"] else "No"
         if r["type"] == "control":
@@ -295,12 +288,11 @@ def main():
     results_md.append("- Comprehensive Markdown Report: [UNIFIED_REPORT.md](UNIFIED_REPORT.md)")
     results_md.append("- OASIS SARIF v2.1.0 Report: [SARIF_REPORT.sarif](SARIF_REPORT.sarif)")
     results_md.append("- Sanitized JSON Findings: [FINDINGS.json](FINDINGS.json)")
-    
+
     results_path = os.path.join(base_dir, "RESULTS.md")
     with open(results_path, "w", encoding="utf-8") as f:
         f.write("\n".join(results_md))
     print(f"Saved results summary to {results_path}")
-
 
 if __name__ == "__main__":
     main()

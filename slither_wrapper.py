@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 # Max contract source size (10 MB)
 MAX_CONTRACT_SIZE_BYTES = 10 * 1024 * 1024
 
-
 def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool = False) -> List[Finding]:
     """
     Run Slither static analyzer on a Solidity contract.
@@ -28,7 +27,7 @@ def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool 
 
     cleaned_path = str(contract_path).strip()
     contract_path = os.path.realpath(os.path.abspath(cleaned_path))
-    
+
     basename = os.path.basename(contract_path)
     if basename.startswith(("-", "\u2212", "\u2013", "\u2014")):
         raise ValueError("Contract path basename cannot start with a dash or dash equivalent")
@@ -69,7 +68,7 @@ def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool 
 
     cmd = [slither_bin, contract_path, "--json", "-"]
     timeout_sec = int(os.environ.get("CONTRACTGUARD_SLITHER_TIMEOUT", "120"))
-    
+
     try:
         result = subprocess.run(
             cmd,
@@ -88,10 +87,10 @@ def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool 
         if fallback_to_ast:
             return ASTAnalyzer().analyze_source(source_content, contract_path)
         return []
-        
+
     stdout = result.stdout
     stderr = result.stderr
-    
+
     # Locate the JSON block in stdout or stderr
     start_idx = stdout.find("{")
     if start_idx == -1:
@@ -107,7 +106,7 @@ def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool 
             json_str = stderr[start_idx:]
     else:
         json_str = stdout[start_idx:]
-        
+
     data = None
     try:
         data = json.loads(json_str)
@@ -124,7 +123,7 @@ def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool 
             if fallback_to_ast:
                 return ASTAnalyzer().analyze_source(source_content, contract_path)
             return []
-            
+
     findings: List[Finding] = []
     if not data or not data.get("success"):
         if data and data.get("error"):
@@ -132,15 +131,14 @@ def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool 
                 if fallback_to_ast:
                     return ASTAnalyzer().analyze_source(source_content, contract_path)
                 return []
-                
+
     detectors = data.get("results", {}).get("detectors", [])
     for detector in detectors:
         impact = (detector.get("impact") or "unknown").lower()
         severity = Severity.from_str(impact)
         category = detector.get("check") or "unknown"
         description = detector.get("description", "").strip()
-        
-        # Determine function_or_line
+
         func_name = None
         first_line = None
         last_line = None
@@ -157,7 +155,7 @@ def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool 
                 func_name = elem.get("name")
             if elem.get("type") == "contract" and elem.get("name"):
                 contract_name = elem.get("name")
-        
+
         if func_name and first_line and last_line and first_line != last_line:
             function_or_line = f"{func_name} (lines {first_line}-{last_line})"
         elif func_name and first_line:
@@ -170,7 +168,7 @@ def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool 
             function_or_line = f"Line {first_line}"
         else:
             function_or_line = "unknown"
-            
+
         findings.append(Finding(
             severity=severity,
             category=category,
@@ -182,5 +180,5 @@ def run_slither(contract_path: str, fallback_to_ast: bool = True, offline: bool 
             line_end=last_line or first_line,
             confidence=Confidence.HIGH
         ))
-        
+
     return findings

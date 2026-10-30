@@ -8,7 +8,6 @@ from typing import Dict, Any, Optional, List, Union
 import json
 import re
 
-
 class Severity(str, Enum):
     CRITICAL = "critical"
     HIGH = "high"
@@ -90,7 +89,6 @@ class Severity(str, Enum):
         s, o = self._order_val(other)
         return s < o
 
-
 class Confidence(str, Enum):
     HIGH = "High"
     MEDIUM = "Medium"
@@ -110,7 +108,6 @@ class Confidence(str, Enum):
         elif val in ("low", "l"):
             return cls.LOW
         return cls.HIGH
-
 
 class Finding:
     """
@@ -158,7 +155,6 @@ class Finding:
         self.code_snippet: Optional[str] = code_snippet
         self.suppressed: bool = suppressed
 
-        # Parse line ranges from function_or_line if not explicitly provided
         if line_start is None or line_end is None:
             parsed_start, parsed_end = self._parse_line_numbers(self.function_or_line)
             self.line_start: Optional[int] = line_start if line_start is not None else parsed_start

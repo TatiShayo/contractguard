@@ -9,11 +9,9 @@ import tempfile
 from cli import audit_contract
 from models import Finding, Severity, Confidence
 
-
 @pytest.fixture
 def base_dir():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 def test_audit_contract_on_reentrancy(base_dir):
     path = os.path.join(base_dir, "fixtures", "ethernaut", "Reentrancy.sol")
@@ -21,13 +19,11 @@ def test_audit_contract_on_reentrancy(base_dir):
     assert len(findings) > 0
     assert any("reentrancy" in f.category.lower() or f.rule_id == "CG-001-REENTRANCY" for f in findings)
 
-
 def test_audit_contract_on_telephone(base_dir):
     path = os.path.join(base_dir, "fixtures", "ethernaut", "Telephone.sol")
     findings = audit_contract(path, offline=True)
     assert len(findings) > 0
     assert any("tx.origin" in f.category.lower() or "origin" in f.category.lower() or f.rule_id == "CG-002-TX-ORIGIN" for f in findings)
-
 
 def test_audit_contract_on_delegation(base_dir):
     path = os.path.join(base_dir, "fixtures", "ethernaut", "Delegation.sol")
@@ -35,13 +31,11 @@ def test_audit_contract_on_delegation(base_dir):
     assert len(findings) > 0
     assert any("delegatecall" in f.category.lower() or f.rule_id == "CG-003-CONTROLLED-DELEGATECALL" for f in findings)
 
-
 def test_audit_contract_on_clean_control(base_dir):
     path = os.path.join(base_dir, "fixtures", "ethernaut", "Clean.sol")
     findings = audit_contract(path, offline=True)
     high_or_crit = [f for f in findings if f.severity in ("critical", "high", "medium")]
     assert len(high_or_crit) == 0
-
 
 def test_audit_contract_on_naive_receiver(base_dir):
     path = os.path.join(base_dir, "fixtures", "dvd", "NaiveReceiverLenderPool.sol")
@@ -49,13 +43,11 @@ def test_audit_contract_on_naive_receiver(base_dir):
     assert len(findings) > 0
     assert any("access control" in f.category.lower() or "flash loan" in f.category.lower() or f.rule_id == "CG-008-FLASHLOAN-ACCESS-CONTROL" for f in findings)
 
-
 def test_audit_contract_on_truster(base_dir):
     path = os.path.join(base_dir, "fixtures", "dvd", "TrusterLenderPool.sol")
     findings = audit_contract(path, offline=True)
     assert len(findings) > 0
     assert any("arbitrary" in f.category.lower() or "external call" in f.category.lower() or f.rule_id == "CG-006-ARBITRARY-CALL" for f in findings)
-
 
 def test_audit_contract_on_side_entrance(base_dir):
     path = os.path.join(base_dir, "fixtures", "dvd", "SideEntranceLenderPool.sol")
@@ -63,13 +55,11 @@ def test_audit_contract_on_side_entrance(base_dir):
     assert len(findings) > 0
     assert any("reentrancy" in f.category.lower() or "deposit" in f.category.lower() or f.rule_id == "CG-007-FLASHLOAN-DEPOSIT-REENTRANCY" for f in findings)
 
-
 def test_cli_min_severity_filter(base_dir):
     path = os.path.join(base_dir, "fixtures", "ethernaut", "Reentrancy.sol")
     all_findings = audit_contract(path, offline=True, min_severity=Severity.INFORMATIONAL)
     critical_only = audit_contract(path, offline=True, min_severity=Severity.CRITICAL)
     assert len(critical_only) <= len(all_findings)
-
 
 def test_model_severity_ordering():
     assert Severity.CRITICAL > Severity.HIGH
@@ -79,7 +69,6 @@ def test_model_severity_ordering():
     assert Severity.HIGH >= Severity.HIGH
     assert Severity.LOW <= Severity.MEDIUM
 
-
 def test_model_finding_equality_and_hashing():
     f1 = Finding(severity="high", category="Reentrancy", function_or_line="withdraw", description="Desc")
     f2 = Finding(severity="high", category="Reentrancy", function_or_line="withdraw", description="Desc")
@@ -88,11 +77,9 @@ def test_model_finding_equality_and_hashing():
     s = {f1, f2}
     assert len(s) == 1
 
-
 def test_audit_contract_nonexistent_file_raises():
     with pytest.raises(FileNotFoundError):
         audit_contract("/nonexistent/file/Fake.sol", offline=True)
-
 
 def test_cli_report_generation_in_temp_dir(base_dir):
     import sys
@@ -113,7 +100,6 @@ def test_cli_report_generation_in_temp_dir(base_dir):
         assert os.path.exists(os.path.join(tmp_dir, "REPORT.sarif"))
         assert os.path.exists(os.path.join(tmp_dir, "FINDINGS.json"))
 
-
 def test_cli_scan_directory_in_temp_dir(base_dir):
     import sys
     from unittest.mock import patch
@@ -130,7 +116,6 @@ def test_cli_scan_directory_in_temp_dir(base_dir):
 
         assert os.path.exists(os.path.join(tmp_dir, "FINDINGS.json"))
 
-
 def test_cli_no_contracts_found_graceful_exit():
     import sys
     from unittest.mock import patch
@@ -142,4 +127,3 @@ def test_cli_no_contracts_found_graceful_exit():
             with pytest.raises(SystemExit) as exc_info:
                 main()
             assert exc_info.value.code == 0
-

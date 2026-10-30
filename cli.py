@@ -23,7 +23,6 @@ from report_generator import (
 
 VERSION = "2.0.0"
 
-
 def audit_contract(file_path: str, offline: bool = False, min_severity: Severity = Severity.INFORMATIONAL) -> List[Finding]:
     """
     Execute full multi-layer security audit on a single Solidity contract.
@@ -32,26 +31,21 @@ def audit_contract(file_path: str, offline: bool = False, min_severity: Severity
     if not os.path.isfile(file_path):
         raise FileNotFoundError(f"Contract not found: {file_path}")
 
-    # 1. Slither Static Analysis
     try:
         slither_f = run_slither(file_path, offline=offline)
     except Exception:
         slither_f = []
 
-    # 2. Mythril Symbolic Execution
     try:
         mythril_f = run_mythril(file_path, offline=offline)
     except Exception:
         mythril_f = []
 
-    # 3. Reconcile Slither & Mythril
     reconciled_f = reconcile(slither_f, mythril_f)
 
-    # 4. Read source code
     with open(file_path, "r", encoding="utf-8") as f:
         source = f.read()
 
-    # 5. Economic Logic Judge (LLM or Heuristic)
     try:
         if offline:
             # Force fallback mode by temporarily unsetting keys
@@ -69,7 +63,6 @@ def audit_contract(file_path: str, offline: bool = False, min_severity: Severity
     except Exception:
         llm_f = []
 
-    # 6. Built-in AST Analyzer
     ast_f = ASTAnalyzer().analyze_source(source, file_path)
 
     # Combine findings with deduplication
@@ -84,7 +77,6 @@ def audit_contract(file_path: str, offline: bool = False, min_severity: Severity
                 all_findings.append(f)
 
     return all_findings
-
 
 def main():
     parser = argparse.ArgumentParser(
@@ -159,12 +151,10 @@ def main():
             f.write(json_content)
         print(f"  [OK] Saved JSON report to {json_file}")
 
-    # Return non-zero if critical vulnerabilities exist
     has_critical = any(f.severity in ("critical", "high") for f in all_findings)
     if has_critical:
         sys.exit(1)
     sys.exit(0)
-
 
 if __name__ == "__main__":
     main()

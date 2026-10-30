@@ -6,7 +6,6 @@ Contains rule definitions, CWE mappings, default severities, and remediation adv
 from typing import Dict, Any, Optional
 from models import Severity
 
-
 RULES_REGISTRY: Dict[str, Dict[str, Any]] = {
     "CG-001-REENTRANCY": {
         "rule_id": "CG-001-REENTRANCY",
@@ -25,9 +24,7 @@ RULES_REGISTRY: Dict[str, Dict[str, Any]] = {
 // Fix: Apply Checks-Effects-Interactions & ReentrancyGuard
 function withdraw(uint256 amount) external nonReentrant {
     require(balances[msg.sender] >= amount, "Insufficient balance");
-    // 1. Effects (state update first)
     balances[msg.sender] -= amount;
-    // 2. Interactions (external call last)
     (bool success, ) = msg.sender.call{value: amount}("");
     require(success, "Transfer failed");
 }
@@ -163,7 +160,6 @@ function executeAction(address target, bytes calldata data) external onlyOwner {
 function flashLoan(uint256 amount) external nonReentrant {
     uint256 balanceBefore = address(this).balance;
     IFlashLoanEtherReceiver(msg.sender).execute{value: amount}();
-    // Ensure repaid amount is not credited as a user balance
     require(address(this).balance >= balanceBefore, "Repayment failed");
 }
 """
@@ -502,7 +498,6 @@ function mint(address to, uint256 amount) external onlyRole(MINTER_ROLE) {
     }
 }
 
-
 def get_rule_by_id(rule_id: str) -> Optional[Dict[str, Any]]:
     if not rule_id:
         return None
@@ -518,7 +513,6 @@ def get_rule_by_id(rule_id: str) -> Optional[Dict[str, Any]]:
             return rule
     return None
 
-
 def get_rule_for_category(category: str) -> Optional[Dict[str, Any]]:
     if not category:
         return None
@@ -533,7 +527,6 @@ def get_rule_for_category(category: str) -> Optional[Dict[str, Any]]:
             if alias.lower() in cat_lower or cat_lower in alias.lower():
                 return rule
     return None
-
 
 def get_remediation_for_rule(rule_id_or_category: str) -> str:
     rule = get_rule_by_id(rule_id_or_category)

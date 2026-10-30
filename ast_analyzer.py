@@ -11,7 +11,6 @@ from typing import List, Dict, Any, Optional, Set, Tuple
 from models import Finding, Severity, Confidence
 from rules import RULES_REGISTRY, get_rule_by_id
 
-
 def _find_matching_brace(source: str, open_brace_idx: int) -> int:
     """
     Find index of matching closing brace '}' in Solidity source code,
@@ -95,7 +94,6 @@ def _find_matching_brace(source: str, open_brace_idx: int) -> int:
 
     return len(source)
 
-
 class SolidityFunction:
     def __init__(
         self,
@@ -162,7 +160,6 @@ class SolidityFunction:
                 return True
         return False
 
-
 class SolidityContract:
     def __init__(
         self,
@@ -190,7 +187,6 @@ class SolidityContract:
         self.events: List[str] = []
         self.modifiers_defined: List[str] = []
 
-
 class ASTAnalyzer:
     """
     Precision Solidity Static & AST Analysis Engine.
@@ -203,86 +199,61 @@ class ASTAnalyzer:
         if not source_code or not source_code.strip():
             return []
 
-        # Handle size limit
         if len(source_code) > 10_000_000:
             source_code = source_code[:10_000_000]
 
         lines = source_code.splitlines()
         contract_name = self._guess_primary_contract_name(source_code, file_path)
 
-        # Parse inline suppressions
         suppressed_rules_by_line = self._parse_suppressions(lines)
 
-        # Parse contracts and functions
         contracts = self._parse_contracts(source_code, lines)
 
         findings: List[Finding] = []
 
         for contract in contracts:
-            # 1. Reentrancy
             findings.extend(self._detect_reentrancy(contract, lines))
 
-            # 2. tx.origin Authentication
             findings.extend(self._detect_tx_origin(contract, lines))
 
-            # 3. Controlled / Untrusted Delegatecall
             findings.extend(self._detect_controlled_delegatecall(contract, lines))
 
-            # 4. Unchecked Low-Level Calls
             findings.extend(self._detect_unchecked_calls(contract, lines))
 
-            # 5. Missing Access Control on Sensitive Functions
             findings.extend(self._detect_missing_access_control(contract, lines))
 
-            # 6. Arbitrary External Call Execution (Truster pattern)
             findings.extend(self._detect_arbitrary_calls(contract, lines))
 
-            # 7. Flash Loan Deposit-Based Reentrancy (SideEntrance pattern)
             findings.extend(self._detect_flashloan_deposit_reentrancy(contract, lines))
 
-            # 8. Flash Loan Access Control (NaiveReceiver pattern)
             findings.extend(self._detect_flashloan_access_control(contract, lines))
 
-            # 9. Spot Price / Oracle Manipulation
             findings.extend(self._detect_oracle_manipulation(contract, lines))
 
-            # 10. Selfdestruct / Suicide
             findings.extend(self._detect_selfdestruct(contract, lines))
 
-            # 11. Integer Overflow / Underflow in unchecked blocks
             findings.extend(self._detect_integer_overflow(contract, lines))
 
-            # 12. Useless Statements / Dead Code
             findings.extend(self._detect_useless_statements(contract, lines))
 
-            # 13. Unprotected Initialize
             findings.extend(self._detect_unprotected_initialize(contract, lines))
 
-            # 14. Missing Zero Address Check
             findings.extend(self._detect_missing_zero_check(contract, lines))
 
-            # 15. Arbitrary ETH Transfer
             findings.extend(self._detect_arbitrary_eth_transfer(contract, lines))
 
-            # 16. Uninitialized Local Storage Pointer
             findings.extend(self._detect_uninitialized_storage(contract, lines))
 
-            # 17. Missing Nonce or Domain Separator in Signature Validation (CG-018)
             findings.extend(self._detect_signature_replay(contract, lines))
 
-            # 18. Insecure Randomness from On-Chain Variables (CG-019)
             findings.extend(self._detect_weak_prng(contract, lines))
 
-            # 19. Read-Only Reentrancy Vulnerability (CG-020)
             findings.extend(self._detect_read_only_reentrancy(contract, lines))
 
-            # 20. Unchecked ERC20 Transfer Return Value (CG-021)
             findings.extend(self._detect_unchecked_erc20_transfer(contract, lines))
 
-            # 21. Unprotected Token Minting (CG-022)
             findings.extend(self._detect_unprotected_mint(contract, lines))
 
-        # 22. Floating / Outdated Pragma (file level)
         findings.extend(self._detect_floating_pragma(source_code, lines, contract_name))
 
         # Filter out suppressed findings
@@ -482,9 +453,7 @@ class ASTAnalyzer:
 
         return functions
 
-    # -------------------------------------------------------------
     # DETECTOR 1: Reentrancy (CWE-841)
-    # -------------------------------------------------------------
     def _detect_reentrancy(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-001-REENTRANCY"]
@@ -548,9 +517,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 2: tx.origin Authentication (CWE-284)
-    # -------------------------------------------------------------
     def _detect_tx_origin(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-002-TX-ORIGIN"]
@@ -583,9 +550,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 3: Controlled / Arbitrary Delegatecall (CWE-829)
-    # -------------------------------------------------------------
     def _detect_controlled_delegatecall(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-003-CONTROLLED-DELEGATECALL"]
@@ -617,9 +582,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 4: Unchecked Low-Level Calls (CWE-252)
-    # -------------------------------------------------------------
     def _detect_unchecked_calls(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-004-UNCHECKED-CALL"]
@@ -658,9 +621,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 5: Missing Access Control on Sensitive Functions (CWE-284)
-    # -------------------------------------------------------------
     def _detect_missing_access_control(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-005-ACCESS-CONTROL"]
@@ -698,9 +659,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 6: Arbitrary External Call (CWE-841) - Truster Pattern
-    # -------------------------------------------------------------
     def _detect_arbitrary_calls(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-006-ARBITRARY-CALL"]
@@ -731,9 +690,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 7: Flash Loan Deposit Reentrancy (CWE-841) - SideEntrance Pattern
-    # -------------------------------------------------------------
     def _detect_flashloan_deposit_reentrancy(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-007-FLASHLOAN-DEPOSIT-REENTRANCY"]
@@ -769,9 +726,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 8: Flash Loan Access Control (CWE-284) - NaiveReceiver Pattern
-    # -------------------------------------------------------------
     def _detect_flashloan_access_control(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-008-FLASHLOAN-ACCESS-CONTROL"]
@@ -807,9 +762,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 9: Spot Price / Oracle Manipulation (CWE-682)
-    # -------------------------------------------------------------
     def _detect_oracle_manipulation(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-009-PRICE-ORACLE-MANIPULATION"]
@@ -840,9 +793,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 10: Selfdestruct / Suicide (CWE-284)
-    # -------------------------------------------------------------
     def _detect_selfdestruct(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-010-SELFDESTRUCT"]
@@ -875,9 +826,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 11: Integer Overflow in Unchecked Block (CWE-190)
-    # -------------------------------------------------------------
     def _detect_integer_overflow(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-011-INTEGER-OVERFLOW"]
@@ -912,9 +861,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 12: Useless Statements / Dead Code (CWE-561)
-    # -------------------------------------------------------------
     def _detect_useless_statements(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-012-USELESS-STATEMENT"]
@@ -946,9 +893,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 13: Unprotected Initialize (CWE-284)
-    # -------------------------------------------------------------
     def _detect_unprotected_initialize(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-013-UNPROTECTED-INITIALIZE"]
@@ -979,9 +924,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 14: Missing Zero-Address Validation (CWE-20)
-    # -------------------------------------------------------------
     def _detect_missing_zero_check(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-014-MISSING-ZERO-CHECK"]
@@ -1016,9 +959,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 15: Arbitrary ETH Transfer (CWE-284)
-    # -------------------------------------------------------------
     def _detect_arbitrary_eth_transfer(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-015-ARBITRARY-SEND-ETH"]
@@ -1052,9 +993,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 16: Uninitialized Local Storage Pointer (CWE-824)
-    # -------------------------------------------------------------
     def _detect_uninitialized_storage(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-016-UNINITIALIZED-STORAGE"]
@@ -1089,9 +1028,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 17: Floating / Outdated Pragma (CWE-1038)
-    # -------------------------------------------------------------
     def _detect_floating_pragma(self, source: str, lines: List[str], contract_name: str) -> List[Finding]:
         findings = []
         rule = self.rules["CG-017-FLOATING-PRAGMA"]
@@ -1124,9 +1061,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 18: Missing Nonce / Signature Replay (CWE-347)
-    # -------------------------------------------------------------
     def _detect_signature_replay(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-018-SIGNATURE-REPLAY"]
@@ -1162,9 +1097,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 19: Insecure Randomness from On-Chain Variables (CWE-330)
-    # -------------------------------------------------------------
     def _detect_weak_prng(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-019-WEAK-PRNG"]
@@ -1200,9 +1133,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 20: Read-Only Reentrancy Vulnerability (CWE-841)
-    # -------------------------------------------------------------
     def _detect_read_only_reentrancy(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-020-READ-ONLY-REENTRANCY"]
@@ -1234,9 +1165,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 21: Unchecked ERC20 Transfer Return Value (CWE-252)
-    # -------------------------------------------------------------
     def _detect_unchecked_erc20_transfer(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-021-UNCHECKED-ERC20-TRANSFER"]
@@ -1276,9 +1205,7 @@ class ASTAnalyzer:
 
         return findings
 
-    # -------------------------------------------------------------
     # DETECTOR 22: Unprotected Token Minting (CWE-284)
-    # -------------------------------------------------------------
     def _detect_unprotected_mint(self, contract: SolidityContract, lines: List[str]) -> List[Finding]:
         findings = []
         rule = self.rules["CG-022-UNPROTECTED-MINT"]

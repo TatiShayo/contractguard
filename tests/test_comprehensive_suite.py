@@ -21,15 +21,9 @@ from report_generator import (
 )
 from cli import audit_contract
 
-
 @pytest.fixture
 def analyzer():
     return ASTAnalyzer()
-
-
-# =====================================================================
-# 1. REENTRANCY DETECTION SUITE (CG-001)
-# =====================================================================
 
 def test_reentrancy_call_value_mutation(analyzer):
     code = """
@@ -49,7 +43,6 @@ def test_reentrancy_call_value_mutation(analyzer):
     assert f.severity == "high"
     assert f.cwe_id == "CWE-841"
 
-
 def test_reentrancy_array_push_mutation(analyzer):
     code = """
     contract VulnerablePush {
@@ -63,7 +56,6 @@ def test_reentrancy_array_push_mutation(analyzer):
     """
     findings = analyzer.analyze_source(code, "VulnerablePush.sol")
     assert any(f.rule_id == "CG-001-REENTRANCY" for f in findings)
-
 
 def test_reentrancy_delete_state_mutation(analyzer):
     code = """
@@ -79,7 +71,6 @@ def test_reentrancy_delete_state_mutation(analyzer):
     """
     findings = analyzer.analyze_source(code, "VulnerableDelete.sol")
     assert any(f.rule_id == "CG-001-REENTRANCY" for f in findings)
-
 
 def test_reentrancy_custom_lock_modifier_safe(analyzer):
     code = """
@@ -102,7 +93,6 @@ def test_reentrancy_custom_lock_modifier_safe(analyzer):
     findings = analyzer.analyze_source(code, "SafeWithCustomLock.sol")
     assert not any(f.rule_id == "CG-001-REENTRANCY" for f in findings)
 
-
 def test_reentrancy_cei_pattern_safe(analyzer):
     code = """
     contract SafeCEI {
@@ -118,11 +108,6 @@ def test_reentrancy_cei_pattern_safe(analyzer):
     findings = analyzer.analyze_source(code, "SafeCEI.sol")
     assert not any(f.rule_id == "CG-001-REENTRANCY" for f in findings)
 
-
-# =====================================================================
-# 2. TX.ORIGIN AUTHORIZATION SUITE (CG-002)
-# =====================================================================
-
 def test_tx_origin_in_assert(analyzer):
     code = """
     contract AssertTxOrigin {
@@ -135,7 +120,6 @@ def test_tx_origin_in_assert(analyzer):
     """
     findings = analyzer.analyze_source(code, "AssertTxOrigin.sol")
     assert any(f.rule_id == "CG-002-TX-ORIGIN" for f in findings)
-
 
 def test_tx_origin_in_modifier(analyzer):
     code = """
@@ -153,7 +137,6 @@ def test_tx_origin_in_modifier(analyzer):
     findings = analyzer.analyze_source(code, "ModifierTxOrigin.sol")
     assert any(f.rule_id == "CG-002-TX-ORIGIN" for f in findings)
 
-
 def test_tx_origin_safe_msg_sender_equality(analyzer):
     code = """
     contract SafeMsgSender {
@@ -168,11 +151,6 @@ def test_tx_origin_safe_msg_sender_equality(analyzer):
     findings = analyzer.analyze_source(code, "SafeMsgSender.sol")
     assert not any(f.rule_id == "CG-002-TX-ORIGIN" for f in findings)
 
-
-# =====================================================================
-# 3. CONTROLLED DELEGATECALL SUITE (CG-003)
-# =====================================================================
-
 def test_controlled_delegatecall_public_function(analyzer):
     code = """
     contract DynamicDelegate {
@@ -186,7 +164,6 @@ def test_controlled_delegatecall_public_function(analyzer):
     assert any(f.rule_id == "CG-003-CONTROLLED-DELEGATECALL" for f in findings)
     f = next(f for f in findings if f.rule_id == "CG-003-CONTROLLED-DELEGATECALL")
     assert f.severity == "high"
-
 
 def test_controlled_delegatecall_guarded_by_onlyadmin(analyzer):
     code = """
@@ -205,11 +182,6 @@ def test_controlled_delegatecall_guarded_by_onlyadmin(analyzer):
     findings = analyzer.analyze_source(code, "GuardedDelegate.sol")
     assert not any(f.rule_id == "CG-003-CONTROLLED-DELEGATECALL" for f in findings)
 
-
-# =====================================================================
-# 4. UNCHECKED LOW-LEVEL CALLS SUITE (CG-004 & CG-021)
-# =====================================================================
-
 def test_unchecked_send_detector(analyzer):
     code = """
     contract UncheckedSend {
@@ -220,7 +192,6 @@ def test_unchecked_send_detector(analyzer):
     """
     findings = analyzer.analyze_source(code, "UncheckedSend.sol")
     assert any(f.rule_id == "CG-004-UNCHECKED-CALL" for f in findings)
-
 
 def test_unchecked_staticcall_detector(analyzer):
     code = """
@@ -233,7 +204,6 @@ def test_unchecked_staticcall_detector(analyzer):
     findings = analyzer.analyze_source(code, "UncheckedStaticCall.sol")
     assert any(f.rule_id == "CG-004-UNCHECKED-CALL" for f in findings)
 
-
 def test_unchecked_erc20_transfer_detector(analyzer):
     code = """
     contract UncheckedERC20 {
@@ -244,7 +214,6 @@ def test_unchecked_erc20_transfer_detector(analyzer):
     """
     findings = analyzer.analyze_source(code, "UncheckedERC20.sol")
     assert any(f.rule_id == "CG-021-UNCHECKED-ERC20-TRANSFER" for f in findings)
-
 
 def test_checked_erc20_safe_transfer_safe(analyzer):
     code = """
@@ -258,11 +227,6 @@ def test_checked_erc20_safe_transfer_safe(analyzer):
     findings = analyzer.analyze_source(code, "SafeERC20Transfer.sol")
     assert not any(f.rule_id == "CG-021-UNCHECKED-ERC20-TRANSFER" for f in findings)
 
-
-# =====================================================================
-# 5. ACCESS CONTROL & UNPROTECTED MINTING SUITE (CG-005 & CG-022)
-# =====================================================================
-
 def test_missing_access_control_emergency_withdraw(analyzer):
     code = """
     contract UnprotectedEmergency {
@@ -273,7 +237,6 @@ def test_missing_access_control_emergency_withdraw(analyzer):
     """
     findings = analyzer.analyze_source(code, "UnprotectedEmergency.sol")
     assert any(f.rule_id == "CG-005-ACCESS-CONTROL" for f in findings)
-
 
 def test_missing_access_control_set_fee(analyzer):
     code = """
@@ -286,7 +249,6 @@ def test_missing_access_control_set_fee(analyzer):
     """
     findings = analyzer.analyze_source(code, "UnprotectedFee.sol")
     assert any(f.rule_id == "CG-005-ACCESS-CONTROL" for f in findings)
-
 
 def test_unprotected_mint_detector(analyzer):
     code = """
@@ -302,7 +264,6 @@ def test_unprotected_mint_detector(analyzer):
     assert any(f.rule_id == "CG-022-UNPROTECTED-MINT" for f in findings)
     f = next(f for f in findings if f.rule_id == "CG-022-UNPROTECTED-MINT")
     assert f.severity == "critical"
-
 
 def test_protected_mint_with_only_owner_safe(analyzer):
     code = """
@@ -320,11 +281,6 @@ def test_protected_mint_with_only_owner_safe(analyzer):
     findings = analyzer.analyze_source(code, "ProtectedMintToken.sol")
     assert not any(f.rule_id == "CG-022-UNPROTECTED-MINT" for f in findings)
 
-
-# =====================================================================
-# 6. SIGNATURE REPLAY & INSECURE RANDOMNESS SUITE (CG-018 & CG-019)
-# =====================================================================
-
 def test_signature_replay_without_nonce_detector(analyzer):
     code = """
     contract VulnerableSignatureVerifier {
@@ -340,7 +296,6 @@ def test_signature_replay_without_nonce_detector(analyzer):
     f = next(f for f in findings if f.rule_id == "CG-018-SIGNATURE-REPLAY")
     assert f.severity == "high"
     assert f.cwe_id == "CWE-347"
-
 
 def test_signature_replay_with_nonce_and_domain_safe(analyzer):
     code = """
@@ -358,7 +313,6 @@ def test_signature_replay_with_nonce_and_domain_safe(analyzer):
     findings = analyzer.analyze_source(code, "SafePermitVerifier.sol")
     assert not any(f.rule_id == "CG-018-SIGNATURE-REPLAY" for f in findings)
 
-
 def test_insecure_randomness_timestamp_modulo(analyzer):
     code = """
     contract Lottery {
@@ -374,7 +328,6 @@ def test_insecure_randomness_timestamp_modulo(analyzer):
     assert f.severity == "high"
     assert f.cwe_id == "CWE-330"
 
-
 def test_insecure_randomness_blockhash_modulo(analyzer):
     code = """
     contract CoinFlip {
@@ -385,11 +338,6 @@ def test_insecure_randomness_blockhash_modulo(analyzer):
     """
     findings = analyzer.analyze_source(code, "CoinFlip.sol")
     assert any(f.rule_id == "CG-019-WEAK-PRNG" for f in findings)
-
-
-# =====================================================================
-# 7. READ-ONLY REENTRANCY & ORACLE SUITE (CG-020 & CG-009)
-# =====================================================================
 
 def test_read_only_reentrancy_curve_virtual_price(analyzer):
     code = """
@@ -404,7 +352,6 @@ def test_read_only_reentrancy_curve_virtual_price(analyzer):
     findings = analyzer.analyze_source(code, "LendingProtocol.sol")
     assert any(f.rule_id == "CG-020-READ-ONLY-REENTRANCY" for f in findings)
 
-
 def test_read_only_reentrancy_with_guard_safe(analyzer):
     code = """
     contract SafeLendingProtocol {
@@ -418,11 +365,6 @@ def test_read_only_reentrancy_with_guard_safe(analyzer):
     findings = analyzer.analyze_source(code, "SafeLendingProtocol.sol")
     assert not any(f.rule_id == "CG-020-READ-ONLY-REENTRANCY" for f in findings)
 
-
-# =====================================================================
-# 8. SELFDESTRUCT SEVERITY STRATIFICATION (CG-010)
-# =====================================================================
-
 def test_selfdestruct_unprotected_critical(analyzer):
     code = """
     contract UnprotectedKill {
@@ -435,7 +377,6 @@ def test_selfdestruct_unprotected_critical(analyzer):
     assert any(f.rule_id == "CG-010-SELFDESTRUCT" for f in findings)
     f = next(f for f in findings if f.rule_id == "CG-010-SELFDESTRUCT")
     assert f.severity == "critical"
-
 
 def test_selfdestruct_protected_only_owner_medium(analyzer):
     code = """
@@ -455,17 +396,11 @@ def test_selfdestruct_protected_only_owner_medium(analyzer):
     f = next(f for f in findings if f.rule_id == "CG-010-SELFDESTRUCT")
     assert f.severity == "medium"
 
-
-# =====================================================================
-# 9. BRACE MATCHER & LEXICAL PARSER RESILIENCE
-# =====================================================================
-
 def test_find_matching_brace_with_braces_in_strings():
     source = 'contract Test { string s = "{}{"; function foo() public {} }'
     open_brace = source.find('{')
     close_brace = _find_matching_brace(source, open_brace)
     assert close_brace == len(source) - 1
-
 
 def test_find_matching_brace_with_single_line_comment():
     source = 'contract Test {\n // unmatched { }\n function bar() public {} }'
@@ -473,23 +408,16 @@ def test_find_matching_brace_with_single_line_comment():
     close_brace = _find_matching_brace(source, open_brace)
     assert close_brace == len(source) - 1
 
-
 def test_find_matching_brace_with_multiline_comment():
     source = 'contract Test {\n /* unmatched { { } */\n function bar() public {} }'
     open_brace = source.find('{')
     close_brace = _find_matching_brace(source, open_brace)
     assert close_brace == len(source) - 1
 
-
 def test_find_matching_brace_invalid_index():
     source = "contract Empty {}"
     assert _find_matching_brace(source, -1) == len(source)
     assert _find_matching_brace(source, 100) == len(source)
-
-
-# =====================================================================
-# 10. RULES REGISTRY & REMEDIATION RECOMMENDATION TESTS
-# =====================================================================
 
 def test_rules_registry_all_rules_valid():
     for rule_id, rule in RULES_REGISTRY.items():
@@ -502,7 +430,6 @@ def test_rules_registry_all_rules_valid():
         assert "remediation_code" in rule
         assert len(rule["remediation"].strip()) > 0
 
-
 def test_get_rule_by_id_normalized_and_alias():
     assert get_rule_by_id("cg_001_reentrancy") is not None
     assert get_rule_by_id("CG-001-REENTRANCY")["name"] == "Reentrancy Vulnerability"
@@ -514,7 +441,6 @@ def test_get_rule_by_id_normalized_and_alias():
     assert get_rule_by_id("") is None
     assert get_rule_by_id(None) is None
 
-
 def test_get_rule_for_category_fuzzy():
     rule = get_rule_for_category("reentrancy-eth")
     assert rule is not None
@@ -524,15 +450,9 @@ def test_get_rule_for_category_fuzzy():
     assert rule_mint is not None
     assert rule_mint["rule_id"] == "CG-022-UNPROTECTED-MINT"
 
-
 def test_get_remediation_fallback_for_unknown():
     remed = get_remediation_for_rule("non_existent_rule_id_xyz")
     assert "Follow standard smart contract security patterns" in remed
-
-
-# =====================================================================
-# 11. SECURITY POSTURE SCORE & RATING INVARIANTS
-# =====================================================================
 
 def test_score_calculation_boundary_and_monotonicity():
     # 0 findings = 100
@@ -568,11 +488,6 @@ def test_score_calculation_boundary_and_monotonicity():
     assert score5 == 0
     assert "F" in grade5
 
-
-# =====================================================================
-# 12. LINE NUMBER PARSING ROBUSTNESS
-# =====================================================================
-
 def test_parse_line_numbers_variations():
     assert Finding._parse_line_numbers("L15-L23") == (15, 23)
     assert Finding._parse_line_numbers("L42") == (42, 42)
@@ -582,11 +497,6 @@ def test_parse_line_numbers_variations():
     assert Finding._parse_line_numbers("lines #5-#10") == (5, 10)
     assert Finding._parse_line_numbers("") == (None, None)
     assert Finding._parse_line_numbers(None) == (None, None)
-
-
-# =====================================================================
-# 13. REPORT EXPORT SANITIZATION & SARIF SCHEMAS
-# =====================================================================
 
 def test_json_report_structure_and_sanitization():
     f = Finding(
@@ -603,7 +513,6 @@ def test_json_report_structure_and_sanitization():
     assert "\x00" not in data["findings"][0]["category"]
     assert "\x07" not in data["findings"][0]["function_or_line"]
     assert "\x1b" not in data["findings"][0]["description"]
-
 
 def test_sarif_report_with_multiple_rules_and_levels():
     findings = [
@@ -625,11 +534,6 @@ def test_sarif_report_with_multiple_rules_and_levels():
     assert "warning" in levels
     assert "note" in levels
     assert "none" in levels
-
-
-# =====================================================================
-# 14. END-TO-END CLI INTEGRATION TESTS
-# =====================================================================
 
 def test_audit_contract_with_all_detectors_on_vulnerable_vault():
     code = """

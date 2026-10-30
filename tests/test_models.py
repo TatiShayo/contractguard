@@ -6,14 +6,12 @@ Hermes v6 Engineering Standard compliant.
 import pytest
 from models import Severity, Confidence, Finding
 
-
 def test_severity_from_str_standard():
     assert Severity.from_str("critical") == Severity.CRITICAL
     assert Severity.from_str("high") == Severity.HIGH
     assert Severity.from_str("medium") == Severity.MEDIUM
     assert Severity.from_str("low") == Severity.LOW
     assert Severity.from_str("informational") == Severity.INFORMATIONAL
-
 
 def test_severity_from_str_aliases():
     assert Severity.from_str("crit") == Severity.CRITICAL
@@ -29,11 +27,9 @@ def test_severity_from_str_aliases():
     assert Severity.from_str("") == Severity.INFORMATIONAL
     assert Severity.from_str("unknown_val") == Severity.INFORMATIONAL
 
-
 def test_severity_from_str_already_enum():
     assert Severity.from_str(Severity.HIGH) == Severity.HIGH
     assert Severity.from_str(Severity.CRITICAL) == Severity.CRITICAL
-
 
 def test_severity_score_penalties():
     assert Severity.CRITICAL.score_penalty == 25
@@ -42,14 +38,12 @@ def test_severity_score_penalties():
     assert Severity.LOW.score_penalty == 3
     assert Severity.INFORMATIONAL.score_penalty == 0
 
-
 def test_severity_sarif_levels():
     assert Severity.CRITICAL.sarif_level == "error"
     assert Severity.HIGH.sarif_level == "error"
     assert Severity.MEDIUM.sarif_level == "warning"
     assert Severity.LOW.sarif_level == "note"
     assert Severity.INFORMATIONAL.sarif_level == "none"
-
 
 def test_severity_ordering_between_enums():
     assert Severity.CRITICAL > Severity.HIGH
@@ -61,14 +55,12 @@ def test_severity_ordering_between_enums():
     assert Severity.HIGH <= Severity.HIGH
     assert Severity.LOW <= Severity.CRITICAL
 
-
 def test_severity_ordering_with_strings():
     assert Severity.CRITICAL > "high"
     assert Severity.HIGH > "medium"
     assert Severity.MEDIUM >= "medium"
     assert Severity.LOW < "high"
     assert Severity.INFORMATIONAL <= "low"
-
 
 def test_confidence_from_str_variants():
     assert Confidence.from_str("high") == Confidence.HIGH
@@ -80,7 +72,6 @@ def test_confidence_from_str_variants():
     assert Confidence.from_str("l") == Confidence.LOW
     assert Confidence.from_str(None) == Confidence.HIGH
     assert Confidence.from_str(Confidence.LOW) == Confidence.LOW
-
 
 def test_finding_initialization_defaults():
     f = Finding(
@@ -99,7 +90,6 @@ def test_finding_initialization_defaults():
     assert f.line_start is None
     assert f.line_end is None
 
-
 def test_finding_parse_line_numbers_range():
     f = Finding(
         severity="medium",
@@ -109,7 +99,6 @@ def test_finding_parse_line_numbers_range():
     )
     assert f.line_start == 15
     assert f.line_end == 23
-
 
 def test_finding_parse_line_numbers_single():
     f = Finding(
@@ -121,9 +110,7 @@ def test_finding_parse_line_numbers_single():
     assert f.line_start == 42
     assert f.line_end == 42
 
-
 def test_finding_parse_line_numbers_does_not_misparse_types():
-    # Ensure parameter names like uint256 or bytes32 are not misparsed as lines
     f = Finding(
         severity="high",
         category="reentrancy",
@@ -132,7 +119,6 @@ def test_finding_parse_line_numbers_does_not_misparse_types():
     )
     assert f.line_start is None
     assert f.line_end is None
-
 
 def test_finding_derive_rule_id_all_categories():
     assert Finding._derive_rule_id("Reentrancy vulnerability") == "CG-001-REENTRANCY"
@@ -150,7 +136,6 @@ def test_finding_derive_rule_id_all_categories():
     assert Finding._derive_rule_id("Unprotected initialize function") == "CG-013-UNPROTECTED-INITIALIZE"
     assert Finding._derive_rule_id("Missing zero-check on owner") == "CG-014-MISSING-ZERO-CHECK"
     assert Finding._derive_rule_id("Unknown novel bug") == "CG-999-GENERIC"
-
 
 def test_finding_to_dict_keys():
     f = Finding(
@@ -176,7 +161,6 @@ def test_finding_to_dict_keys():
     assert d["line_start"] == 10
     assert d["line_end"] == 15
 
-
 def test_finding_to_sarif_result_structure():
     f = Finding(
         severity="critical",
@@ -192,7 +176,6 @@ def test_finding_to_sarif_result_structure():
     assert sarif["level"] == "error"
     assert sarif["locations"][0]["physicalLocation"]["artifactLocation"]["uri"] == "contracts/Vault.sol"
     assert sarif["locations"][0]["physicalLocation"]["region"]["startLine"] == 99
-
 
 def test_finding_equality_and_hash():
     f1 = Finding(severity="high", category="Reentrancy", function_or_line="withdraw", description="Desc")

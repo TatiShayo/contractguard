@@ -26,7 +26,6 @@ SEVERITY_ORDER = {
 
 MAX_CONTRACT_SIZE_BYTES = 10 * 1024 * 1024
 
-
 def run_mythril(contract_path: str, fallback_to_ast: bool = True, offline: bool = False) -> List[Finding]:
     """
     Run Mythril symbolic execution analyzer on a Solidity contract.
@@ -37,7 +36,7 @@ def run_mythril(contract_path: str, fallback_to_ast: bool = True, offline: bool 
 
     cleaned_path = str(contract_path).strip()
     contract_path = os.path.realpath(os.path.abspath(cleaned_path))
-    
+
     basename = os.path.basename(contract_path)
     if basename.startswith(("-", "\u2212", "\u2013", "\u2014")):
         raise ValueError("Contract path basename cannot start with a dash or dash equivalent")
@@ -68,8 +67,7 @@ def run_mythril(contract_path: str, fallback_to_ast: bool = True, offline: bool 
         if content is None:
             return []
         return _run_mythril_fallback(content, contract_path)
-    
-    # 1. Try to invoke `myth analyze` with absolute path
+
     try:
         myth_bin = shutil.which("myth")
         if not myth_bin:
@@ -109,7 +107,7 @@ def run_mythril(contract_path: str, fallback_to_ast: bool = True, offline: bool 
                         category = issue.get("title") or "unknown"
                         description = issue.get("description", "").strip()
                         func_name = issue.get("function") or "unknown"
-                        
+
                         findings.append(Finding(
                             severity=severity,
                             category=category,
@@ -128,12 +126,10 @@ def run_mythril(contract_path: str, fallback_to_ast: bool = True, offline: bool 
     except Exception as e:
         logger.exception("Mythril execution failed: %s", e)
 
-    # 2. Fallback heuristic pattern-matching engine
     if content is None:
         return findings
 
     return _run_mythril_fallback(content, contract_path)
-
 
 def _run_mythril_fallback(content: str, contract_path: str) -> List[Finding]:
     findings: List[Finding] = []
@@ -155,7 +151,7 @@ def _run_mythril_fallback(content: str, contract_path: str) -> List[Finding]:
                         withdraw_end = j + 1
                         break
                 break
-        
+
         findings.append(Finding(
             severity=Severity.HIGH,
             category="State access after external call",
@@ -167,7 +163,7 @@ def _run_mythril_fallback(content: str, contract_path: str) -> List[Finding]:
             line_end=withdraw_end,
             confidence=Confidence.HIGH
         ))
-        
+
         # Dead code / useless statement
         if "_amount;" in content:
             findings.append(Finding(
@@ -240,7 +236,6 @@ def _run_mythril_fallback(content: str, contract_path: str) -> List[Finding]:
 
     return findings
 
-
 def get_function_name(func_or_line: str) -> str:
     match = re.match(r"^([a-zA-Z_0-9]+)", func_or_line.strip())
     if match:
@@ -248,7 +243,6 @@ def get_function_name(func_or_line: str) -> str:
         if name.lower() not in ("line", "lines", "unknown"):
             return name
     return ""
-
 
 def get_line_numbers(func_or_line: str) -> Set[int]:
     lines = set()
@@ -260,28 +254,26 @@ def get_line_numbers(func_or_line: str) -> Set[int]:
             lines.add(x)
     return lines
 
-
 def is_match(f1: Finding, f2: Finding) -> bool:
     func1 = get_function_name(f1.function_or_line)
     func2 = get_function_name(f2.function_or_line)
-    
+
     lines1 = get_line_numbers(f1.function_or_line)
     lines2 = get_line_numbers(f2.function_or_line)
-    
+
     same_func = bool(func1 and func2 and func1 == func2)
     lines_overlap = bool(lines1 & lines2)
-    
+
     keywords = ["reentrancy", "delegatecall", "origin", "owner", "external call", "access control", "flash loan"]
     desc1_lower = (f1.category + " " + f1.description).lower()
     desc2_lower = (f2.category + " " + f2.description).lower()
-    
+
     shared_keyword = any(kw in desc1_lower and kw in desc2_lower for kw in keywords)
-    
+
     if (same_func and lines_overlap) or (same_func and shared_keyword) or (lines_overlap and shared_keyword):
         return True
-        
-    return False
 
+    return False
 
 def reconcile(slither_findings: List[Finding], mythril_findings: List[Finding]) -> List[Finding]:
     """
@@ -291,7 +283,7 @@ def reconcile(slither_findings: List[Finding], mythril_findings: List[Finding]) 
     """
     reconciled: List[Finding] = []
     matched_mythril: Set[int] = set()
-    
+
     for sf in slither_findings:
         match_found = False
         for i, mf in enumerate(mythril_findings):
@@ -301,11 +293,11 @@ def reconcile(slither_findings: List[Finding], mythril_findings: List[Finding]) 
                 sev1 = sf.severity.lower()
                 sev2 = mf.severity.lower()
                 merged_severity = sf.severity_enum if SEVERITY_ORDER.get(sev1, 0) >= SEVERITY_ORDER.get(sev2, 0) else mf.severity_enum
-                
+
                 merged_desc = f"{sf.description} (Also reported by Mythril: {mf.description})"
                 func_line = sf.function_or_line if len(sf.function_or_line) >= len(mf.function_or_line) else mf.function_or_line
                 merged_category = sf.category
-                
+
                 # Combine source tools
                 tools = set()
                 for src in [sf.source_tool, mf.source_tool]:
@@ -313,7 +305,7 @@ def reconcile(slither_findings: List[Finding], mythril_findings: List[Finding]) 
                         if t.strip():
                             tools.add(t.strip())
                 source_tool = ", ".join(sorted(tools))
-                
+
                 merged_finding = Finding(
                     severity=merged_severity,
                     category=merged_category,
@@ -334,9 +326,9 @@ def reconcile(slither_findings: List[Finding], mythril_findings: List[Finding]) 
                 break
         if not match_found:
             reconciled.append(sf)
-            
+
     for i, mf in enumerate(mythril_findings):
         if i not in matched_mythril:
             reconciled.append(mf)
-            
+
     return reconciled

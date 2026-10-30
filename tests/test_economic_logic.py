@@ -13,7 +13,6 @@ from economic_logic_judge import (
 )
 from models import Finding, Severity, Confidence
 
-
 def test_naive_receiver_fallback_detection():
     source = """
     contract NaiveReceiverLenderPool {
@@ -29,7 +28,6 @@ def test_naive_receiver_fallback_detection():
     assert f.function_or_line == "flashLoan"
     assert f.severity == "high"
 
-
 def test_truster_fallback_detection():
     source = """
     contract TrusterLenderPool {
@@ -43,7 +41,6 @@ def test_truster_fallback_detection():
     f = findings[0]
     assert "arbitrary" in f.category.lower() or "external call" in f.category.lower()
     assert f.severity == "high"
-
 
 def test_side_entrance_fallback_detection():
     source = """
@@ -59,7 +56,6 @@ def test_side_entrance_fallback_detection():
     assert "reentrancy" in f.category.lower() or "deposit" in f.category.lower()
     assert f.severity == "high"
 
-
 def test_generic_oracle_trust_fallback():
     source = """
     contract LendingMarket {
@@ -71,7 +67,6 @@ def test_generic_oracle_trust_fallback():
     """
     findings = _review_economic_logic_fallback(source, [])
     assert any("oracle" in f.category.lower() for f in findings)
-
 
 def test_generic_flash_loan_deposit_reentrancy_fallback():
     source = """
@@ -86,7 +81,6 @@ def test_generic_flash_loan_deposit_reentrancy_fallback():
     findings = _review_economic_logic_fallback(source, [])
     assert any("flash loan" in f.category.lower() or "reentrancy" in f.category.lower() for f in findings)
 
-
 def test_generic_flash_loan_callback_fallback():
     source = """
     contract SimpleLender {
@@ -97,7 +91,6 @@ def test_generic_flash_loan_callback_fallback():
     """
     findings = _review_economic_logic_fallback(source, [])
     assert any("flash loan" in f.category.lower() for f in findings)
-
 
 def test_llm_json_parser_clean_array():
     raw_json = json.dumps([
@@ -114,7 +107,6 @@ def test_llm_json_parser_clean_array():
     assert findings[0].severity == "high"
     assert findings[0].category == "Oracle Price Manipulation"
     assert findings[0].confidence == "High"
-
 
 def test_llm_json_parser_markdown_fences():
     raw_json = """
@@ -134,7 +126,6 @@ def test_llm_json_parser_markdown_fences():
     assert len(findings) == 1
     assert findings[0].severity == "critical"
 
-
 def test_llm_json_parser_dict_wrapped_list():
     raw_json = json.dumps({
         "findings": [
@@ -151,7 +142,6 @@ def test_llm_json_parser_dict_wrapped_list():
     assert len(findings) == 1
     assert findings[0].category == "Sandwich Attack Exposure"
 
-
 def test_llm_json_parser_single_dict():
     raw_json = json.dumps({
         "severity": "low",
@@ -163,7 +153,6 @@ def test_llm_json_parser_single_dict():
     findings = _parse_llm_json(raw_json)
     assert len(findings) == 1
     assert findings[0].severity == "low"
-
 
 def test_llm_json_parser_trailing_commas():
     raw_json = """
@@ -181,11 +170,9 @@ def test_llm_json_parser_trailing_commas():
     assert len(findings) == 1
     assert findings[0].category == "Reentrancy Risk"
 
-
 def test_review_economic_logic_empty_source():
     findings = review_economic_logic("", [])
     assert findings == []
-
 
 def test_review_economic_logic_large_source_truncation():
     large_source = "contract BigContract {\n" + ("// line comment\n" * 15000) + "}"
@@ -193,7 +180,6 @@ def test_review_economic_logic_large_source_truncation():
     # Should not raise
     findings = review_economic_logic(large_source, [])
     assert isinstance(findings, list)
-
 
 def test_review_economic_logic_with_existing_findings():
     existing = [
@@ -207,7 +193,6 @@ def test_review_economic_logic_with_existing_findings():
     source = "contract TestContract { function flashLoan() external { target.call(''); } }"
     findings = review_economic_logic(source, existing)
     assert isinstance(findings, list)
-
 
 def test_llm_finding_attributes():
     f = LLMFinding(
@@ -229,11 +214,9 @@ def test_llm_finding_attributes():
     assert d["source_tool"] == "llm_judge"
     assert d["confidence"] == "High"
 
-
 def test_llm_json_parser_invalid_json_raises():
     with pytest.raises(Exception):
         _parse_llm_json("This is pure garbage text without JSON")
-
 
 def test_llm_json_parser_nested_findings_key():
     raw = json.dumps({
@@ -253,7 +236,6 @@ def test_llm_json_parser_nested_findings_key():
     assert len(findings) == 1
     assert findings[0].category == "Price Manipulation"
 
-
 def test_llm_finding_with_custom_remediation():
     f = LLMFinding(
         severity="medium",
@@ -264,4 +246,3 @@ def test_llm_finding_with_custom_remediation():
     )
     assert f.remediation == "Custom remediation instructions."
     assert f.severity_enum == Severity.MEDIUM
-

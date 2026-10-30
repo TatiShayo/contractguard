@@ -8,7 +8,6 @@ from slither_wrapper import run_slither
 from mythril_wrapper import run_mythril, reconcile
 from economic_logic_judge import review_economic_logic
 
-
 def run_test_with_retries(test_func, retries=2):
     last_err = None
     for attempt in range(retries + 1):
@@ -19,7 +18,6 @@ def run_test_with_retries(test_func, retries=2):
             last_err = e
             print(f"Attempt {attempt} failed: {e}")
     return {"status": "failed", "message": f"{str(last_err)}\n{traceback.format_exc()}", "retries": retries}
-
 
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -77,14 +75,12 @@ def main():
 
         reconciled = reconcile(slither_f, mythril_f)
 
-        # Verify that the reentrancy finding is merged and lists both tools
         reentrancy_merged = [
             f for f in reconciled
             if "reentrancy" in f.category.lower() or "state access" in f.category.lower() or f.rule_id == "CG-001-REENTRANCY"
         ]
         assert len(reentrancy_merged) > 0, "Expected reconciled reentrancy finding"
 
-        # Verify that unique Mythril findings (e.g. Useless statement class) are preserved
         useless_statement = [
             f for f in reconciled
             if f.category == "Useless statement" or f.rule_id == "CG-012-USELESS-STATEMENT"
@@ -165,7 +161,6 @@ def main():
 
     print(f"Saved results to {results_path}")
     print(json.dumps(results, indent=2))
-
 
 if __name__ == "__main__":
     main()
